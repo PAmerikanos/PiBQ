@@ -1,0 +1,129 @@
+#p.line(nyse['time'], nyse['temp'], legend_label="Temp.", line_width=2)
+#bokeh.io.save(p, filename='smoker_temp.html', title='Smoker Temperature')
+
+"""import numpy as np
+from bokeh.plotting import figure, curdoc
+from bokeh.models.sources import ColumnDataSource
+from bokeh.client import push_session
+from bokeh.driving import linear
+
+#@linear(m=0.05, b=0) #step will increment by 0.05 every time
+def update(step):
+    print(step)
+    new_x = np.linspace(step, N+step, N*antialias)
+    new_y1 = np.sin(new_x)
+    
+    line_p.data_source.data["time"] = new_x
+    line_p.data_source.data["temp"] = new_y1
+    
+# open a session to keep our local document in sync with server
+session = push_session(curdoc())
+curdoc().add_periodic_callback(update, 100) #period in ms
+session.show()
+session.loop_until_closed()
+"""
+
+"""
+from math import cos, sin
+from bokeh.io import output_notebook, show
+output_notebook()
+from bokeh.models import ColumnDataSource
+
+def modify_doc(doc):
+    p = figure(match_aspect=True)
+    p.circle(x=0, y=0, radius=1, fill_color=None, line_width=2)
+    
+    # this is just to help the auto-datarange
+    p.rect(0, 0, 2, 2, alpha=0)
+
+    # this is the data source we will stream to
+    source = ColumnDataSource(data=dict(x=[1], y=[0]))
+    p.circle(x='x', y='y', size=12, fill_color='white', source=source)
+
+    def update():
+        x, y = source.data['x'][-1], source.data['y'][-1]
+
+        # construct the new values for all columns, and pass to stream
+        new_data = dict(x=[x*cos(0.1) - y*sin(0.1)], y=[x*sin(0.1) + y*cos(0.1)])
+        source.stream(new_data, rollover=8)
+
+    doc.add_periodic_callback(update, 150)
+    doc.add_root(p)
+    
+save(modify_doc)
+"""
+
+"""
+import numpy as np
+from bokeh.plotting import figure, curdoc
+from bokeh.models.sources import ColumnDataSource
+from bokeh.client import push_session
+from bokeh.driving import linear
+
+antialias = 10
+N = 10
+x = np.linspace(0, N, N*antialias)
+y1 = np.sin(x)
+y2 = np.cos(x)
+
+myfigure = figure(plot_width=800, plot_height=400)
+datacoords = ColumnDataSource(data=dict(x=x, y1=y1, y2=y2))
+linea = myfigure.line("x", "y1", source=datacoords)
+lineb = myfigure.line("x", "y2", source=datacoords)
+
+@linear(m=0.05, b=0) #step will increment by 0.05 every time
+def update(step):
+    new_x = np.linspace(step, N+step, N*antialias)
+    new_y1 = np.sin(new_x)
+    new_y2 = np.cos(new_x)
+
+    linea.data_source.data["x"] = new_x
+    linea.data_source.data["y1"] = new_y1
+    lineb.data_source.data["y2"] = new_y2
+
+# open a session to keep our local document in sync with server
+session = push_session(curdoc())
+curdoc().add_periodic_callback(update, 10) #period in ms
+session.show()
+session.loop_until_closed()
+"""
+
+"""
+from bokeh.plotting import curdoc, figure
+import random
+import time
+
+def update():
+    global i
+    temp_y = random.random()
+    r.data_source.stream({'x': [i], 'y': [temp_y]})
+    i += 1
+
+i = 0
+p = figure()
+r = p.circle([], [])
+curdoc().add_root(p)
+curdoc().add_periodic_callback(update, 100)
+"""
+
+"""
+m = mcp9600.MCP9600()
+
+p = figure(title="Smoker Temperature", x_axis_label='Time', y_axis_label='Temperature', x_axis_type="datetime", plot_width=900, plot_height=1600, tools="xpan,xwheel_zoom,xbox_zoom,reset")
+p.xaxis.major_label_orientation = "vertical"
+source = ColumnDataSource(dict(time=[], temp=[]))
+line_p = p.line(x='time', y='temp', legend_label="Temp.", line_width=2, source=source)
+
+while True:
+    time = datetime.now().time()
+    smoker_temp = m.get_hot_junction_temperature()
+    #ambient_temp = m.get_cold_junction_temperature()
+    source.stream({'x': [time], 'y': [smoker_temp]})
+    
+    # Add labels
+    LabelSet(x='x', y='y', text='names', x_offset=5, y_offset=5, source=source)
+    
+    bokeh.io.save(p, filename='templates/smoker_temp.html', title='Smoker Temperature')
+    
+    time.sleep(1)
+"""
