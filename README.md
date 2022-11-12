@@ -3,12 +3,14 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
 
 ## Setup:
 1. Clone Git repo: `git clone https://github.com/PAmerikanos/RT_temperature_dashboard.git`
-2. Install Bokeh: 
+2. Configure I2C: `raspi-config > Interface Options > I2C > Enable`
+3. Install Bokeh: 
     ```
     sudo apt-get update
     sudo apt-get install python-pip
     sudo pip install bokeh
     sudo apt-get install libatlas-base-dev
+    sudo pip install mcp9600
     ```
 3. Test Bokeh: `sudo bokeh info`
 
