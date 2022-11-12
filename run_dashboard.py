@@ -22,7 +22,6 @@ def update(t):
     new_data = dict(time=[time], smoker_temp=[smoker_temp])
     source.stream(new_data)
 
-#curdoc().add_root(column(gridplot([[p]], toolbar_location="left", plot_width=1000)))
 curdoc().add_root(p)
 curdoc().add_periodic_callback(update, 1000)
 curdoc().title = "Smoker Temperature"
