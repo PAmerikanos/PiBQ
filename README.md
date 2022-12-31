@@ -19,7 +19,7 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
 
 ## To run:
 1. Connect to headless RPi: `ssh pi@192.168.1.XXX` / `pass: 0000`
-2. On SmokerPi under `/RT_temperature_dashboard/` initialize Bokeh server: `bokeh serve run_dashboard.py --allow-websocket-origin 192.168.1.XXX:5006`
+2. On SmokerPi under `/Documents/RT_temperature_dashboard/` initialize Bokeh server: `bokeh serve run_dashboard.py --allow-websocket-origin 192.168.1.XXX:5006`
 3. On client device open browser at `http://192.168.1.XXX:5006/run_dashboard`
 
 
