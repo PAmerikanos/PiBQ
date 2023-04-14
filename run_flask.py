@@ -5,12 +5,7 @@ from flask import Flask
 from matplotlib.figure import Figure
 import csv
 
-with open('temperature.csv', newline='') as csvfile:
-    data = list(csv.reader(csvfile))
-
-
 app = Flask(__name__)
-
 
 @app.route("/")
 def hello():
@@ -26,5 +21,8 @@ def hello():
     return f"<img src='data:image/png;base64,{data}'/>"
 
 if __name__ == '__main__':
+
+    with open('temperature.csv', newline='') as csvfile:
+        data = list(csv.reader(csvfile))
     print(data)
-   app.run()
+    app.run()
