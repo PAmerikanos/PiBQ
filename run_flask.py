@@ -12,7 +12,7 @@ app = Flask(__name__)
 def hello():
     x =[]
     y = []
-    with open('temperature.csv', newline='') as csvfile:
+    with open('temperature.log', newline='') as csvfile:
         data = list(csv.reader(csvfile))
         for row in data:
             x.append(datetime.strptime(row[0],"%H:%M:%S.%f"))
