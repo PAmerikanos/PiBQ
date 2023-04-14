@@ -13,4 +13,4 @@ with open('temperature.log', 'w', encoding = 'utf-8') as f:
         date_time = datetime.now().time()
         f.write(f"{date_time},{smoker_temp}\n")
         f.flush()
-        time.sleep(1)
+        time.sleep(2)
