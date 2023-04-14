@@ -9,7 +9,7 @@ m = mcp9600.MCP9600()
 
 with open('temperature.csv', 'w') as f:
     writer = csv.writer(f)
-    writer.writerow(['datetime', 'temperature'])
+    #writer.writerow(['datetime', 'temperature'])
 
     while True:
         smoker_temp = m.get_hot_junction_temperature()
