@@ -24,11 +24,10 @@ def hello():
     ax = fig.subplots()
     ax.plot(x, y, color = 'g', linestyle = 'dashed',
          marker = 'o',label = "Weather Data")
-    #ax.xticks(rotation = 25)
-    #ax.xlabel('Dates')
-    #ax.ylabel('Temperature(°C)')
-    #ax.title('Weather Report', fontsize = 20)
-    #ax.grid()
+    ax.tick_params(axis='x', rotation=90)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Temperature")
+    ax.grid()
 
     # Save it to a temporary buffer.
     buf = BytesIO()
