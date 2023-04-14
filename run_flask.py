@@ -4,6 +4,7 @@ from io import BytesIO
 from flask import Flask
 from matplotlib.figure import Figure
 import csv
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -13,7 +14,7 @@ def hello():
     y = []
     with open('temperature.csv', newline='') as csvfile:
         data = list(csv.reader(csvfile))
-        for row in lines:
+        for row in data:
             x.append(datetime.strptime(row[0],"%H:%M:%S"))
             y.append(float(row[1]))
 
