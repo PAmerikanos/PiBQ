@@ -15,6 +15,7 @@ def hello():
     with open('temperature.csv', newline='') as csvfile:
         data = list(csv.reader(csvfile))
         for row in data:
+            print(row[0])
             x.append(datetime.strptime(row[0],"%H:%M:%S.%f"))
             y.append(float(row[1]))
 
