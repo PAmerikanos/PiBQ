@@ -13,6 +13,6 @@ with open('temperature.csv', 'w') as f:
 
     while True:
         smoker_temp = m.get_hot_junction_temperature()
-        time = datetime.now().time()
-        writer.writerow([time, smoker_temp])
+        date_time = datetime.now().time()
+        writer.writerow([date_time, smoker_temp])
         time.sleep(1)
