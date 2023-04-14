@@ -7,12 +7,10 @@ import csv
 
 m = mcp9600.MCP9600()
 
-with open('temperature.log', 'w') as f:
-    writer = csv.writer(f)
-
+with open('temperature.log', 'w', encoding = 'utf-8') as f:
     while True:
         smoker_temp = m.get_hot_junction_temperature()
         date_time = datetime.now().time()
-        writer.writerow([date_time, smoker_temp])
-        writer.flush()
+        f.write(f"{date_time},{smoker_temp}")
+        f.flush()
         time.sleep(1)
