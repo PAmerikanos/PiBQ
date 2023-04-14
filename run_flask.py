@@ -9,10 +9,25 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
+    x =[]
+    y = []
+    with open('temperature.csv', newline='') as csvfile:
+        data = list(csv.reader(csvfile))
+        for row in lines:
+            x.append(datetime.strptime(row[0],"%H:%M:%S"))
+            y.append(float(row[1]))
+
     # Generate the figure **without using pyplot**.
     fig = Figure()
     ax = fig.subplots()
-    ax.plot([1, 2])
+    ax.plot(x, y, color = 'g', linestyle = 'dashed',
+         marker = 'o',label = "Weather Data")
+    ax.xticks(rotation = 25)
+    ax.xlabel('Dates')
+    ax.ylabel('Temperature(°C)')
+    ax.title('Weather Report', fontsize = 20)
+    ax.grid()
+
     # Save it to a temporary buffer.
     buf = BytesIO()
     fig.savefig(buf, format="png")
@@ -21,8 +36,4 @@ def hello():
     return f"<img src='data:image/png;base64,{data}'/>"
 
 if __name__ == '__main__':
-
-    with open('temperature.csv', newline='') as csvfile:
-        data = list(csv.reader(csvfile))
-    print(data)
     app.run()
