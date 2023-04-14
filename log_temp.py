@@ -2,7 +2,7 @@
 
 import mcp9600
 from datetime import datetime
-from time import time
+import time
 import csv
 
 m = mcp9600.MCP9600()
