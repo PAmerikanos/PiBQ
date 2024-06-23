@@ -2,14 +2,19 @@
 Dashboard to monitor temperature readings from IoT sensor in real time.
 
 ## Setup
-1. Configure I2C: `raspi-config > Interface Options > I2C > Enable`
+1. Configure I2C: `sudo raspi-config > Interface Options > I2C > Enable`
 2. Install dependencies: 
     ```
     sudo apt-get update
-    sudo apt-get install python-pip
-    sudo apt-get install libatlas-base-dev
+    #sudo apt-get install python3-pip
+    #sudo apt-get install libatlas-base-dev
+    
+    python -m venv ~/venv/default
+    source ~/venv/default/bin/activate
+
     sudo pip3 install mcp9600
     sudo pip3 install matplotlib
+    sudo pip3 install statsmodels
     ```
 3. Clone Git repo: `git clone https://github.com/PAmerikanos/RT_temperature_dashboard.git`
 
