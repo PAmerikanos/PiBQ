@@ -5,12 +5,18 @@ from datetime import datetime
 import time
 import csv
 
-m = mcp9600.MCP9600()
+# https://github.com/pimoroni/mcp9600-python/blob/master/REFERENCE.md#function-reference
+smoker_sensor = mcp9600.MCP9600(i2c_addr=0x66)
+meat_sensor = mcp9600.MCP9600(i2c_addr=0x67)
+
+smoker_sensor.set_thermocouple_type('K')
+meat_sensor.set_thermocouple_type('K')
 
 with open('temperature.log', 'w', encoding = 'utf-8') as f:
     while True:
-        smoker_temp = m.get_hot_junction_temperature()
         date_time = datetime.now().time()
-        f.write(f"{date_time},{smoker_temp}\n")
+        smoker_temp = smoker_sensor.get_hot_junction_temperature()
+        meat_temp = meat_sensor.get_hot_junction_temperature()
+        f.write(f"{date_time},{smoker_temp},{meat_temp}\n")
         f.flush()
         time.sleep(1)
