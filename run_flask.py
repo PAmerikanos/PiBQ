@@ -47,7 +47,7 @@ def parse_temp():
     smoker_temp = []
     meat_temp = []
 
-    with open('temperature.log', newline='') as csvfile:
+    with open('./logs/temperature.log', newline='') as csvfile:
         data = list(csv.reader(csvfile))
         for row in data:
             date_time.append(datetime.strptime(row[0],"%H:%M:%S.%f"))
@@ -75,8 +75,8 @@ def plot_past():
     
     fig = Figure(figsize=(10, 5))
     ax = fig.subplots()
-    ax.plot_date(date_time, smoker_temp, color = 'm')
-    ax.plot_date(date_time, meat_temp, color = 'g')
+    ax.plot(date_time, smoker_temp, color = 'm')
+    ax.plot(date_time, meat_temp, color = 'g')
     myFmt = mdates.DateFormatter('%H:%M')
     ax.xaxis.set_major_formatter(myFmt)
     ax.tick_params(axis='x', rotation=45)
@@ -122,7 +122,7 @@ def plot_future():
 
     # Generate future time indices for the forecast
     last_time = date_time[-1]
-    future_times = pd.date_range(start=last_time, periods=FORECAST_STEPS + 1, freq='S')[1:]
+    future_times = pd.date_range(start=last_time, periods=FORECAST_STEPS + 1, freq='s')[1:]
     
     fig = Figure(figsize=(10, 5))
     ax = fig.subplots()

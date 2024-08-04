@@ -5,9 +5,11 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
 1. Configure I2C: `raspi-config > Interface Options > I2C > Enable`
 2. Add to `/boot/firmware/config.txt`:
     ```
-    dtparam=i2c_arm=on
-    i2c_arm_baudrate=9600
+    dtparam=i2c_arm=on,i2c_arm_baudrate=9600
     ```
+    If thermocouple diplays erroneous values:
+    - https://forums.pimoroni.com/t/mcp9600-breakout-pim437/13129/3
+    - https://www.raspberrypi-spy.co.uk/2018/02/change-raspberry-pi-i2c-bus-speed/
 3. Install dependencies: 
     ```
     sudo apt-get update
@@ -29,12 +31,12 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
         1. Connect to RPi using SSH: `ssh pi@192.168.1.XXX` / `pass: 0000`
         2. `cd RT_temperature_dashboard`
         3. `source ~/venv/default/bin/activate`
-        4. `nohup python3 log_temp.py &`
+        4. `nohup python3 log_temp.py > ./logs/log_temp.log 2>&1 &`
     3. In a separate terminal run the Flask server:
         1. Connect to RPi using SSH: `ssh pi@192.168.1.XXX` / `pass: 0000`
         2. `cd RT_temperature_dashboard`
         3. `source ~/venv/default/bin/activate`
-        4. `nohup python3 run_flask.py &`
+        4. `nohup python3 run_flask.py > ./logs/run_flask.log 2>&1 &`
 
     `Nohup` allows the recording & serving to continue even if WiFi or SSH connection is lost.
     - `tail -f nohup.out` to monitor progress/nohup's output.
