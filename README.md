@@ -11,10 +11,13 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
 3. Install dependencies: 
     ```
     sudo apt-get update
-    sudo apt-get install python-pip
-    sudo apt-get install libatlas-base-dev
-    sudo pip3 install mcp9600
-    sudo pip3 install matplotlib
+    #sudo apt-get install python3-pip
+    #sudo apt-get install libatlas-base-dev
+    
+    python -m venv ~/venv/default
+    source ~/venv/default/bin/activate
+
+    sudo pip3 install mcp9600  matplotlib statsmodels pandas flask
     ```
 4. Clone Git repo: `git clone https://github.com/PAmerikanos/RT_temperature_dashboard.git`
 
@@ -36,7 +39,9 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
     `Nohup` allows the recording & serving to continue even if WiFi or SSH connection is lost.
     - `tail -f nohup.out` to monitor progress/nohup's output.
     - `kill <PID>` to kill either process.
-3. On client device open browser at `http://192.168.1.XXX:5000/`
+5. On client device open browser at:
+    - `http://192.168.1.XXX:5000/past` for past & present recording
+    - `http://192.168.1.XXX:5000/future` for 5-minute future prediction
 
 ## References
 - https://www.pi-shop.ch/thermocouple-amplifier-breakout
