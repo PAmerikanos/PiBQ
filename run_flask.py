@@ -19,26 +19,26 @@ app = Flask(__name__)
 def rolling_average(data, window_size=3):
     """
     Compute the rolling average of a list of floats with a given window size.
-    
+
     Parameters:
         data (list of floats): Input data.
         window_size (int): Size of the rolling window.
-    
+
     Returns:
         list of floats: List of rolling averages.
     """
     # Convert data to NumPy array
     data_array = np.array(data)
-    
+
     # Pad the data array at both ends to handle edges properly
     padded_data = np.pad(data_array, (window_size//2, window_size//2), mode='edge')
-    
+
     # Create a rolling window view of the data array
     rolling_view = np.lib.stride_tricks.sliding_window_view(padded_data, window_shape=window_size)
-    
+
     # Calculate the average along the rolling axis
     rolling_avg = np.mean(rolling_view, axis=1)
-    
+
     return rolling_avg.tolist()
 
 
@@ -72,23 +72,24 @@ def embed_plot(fig):
 @app.route("/past")
 def plot_past():
     date_time, smoker_temp, meat_temp = parse_temp()
-    
+
     fig = Figure(figsize=(10, 5))
     ax = fig.subplots()
     ax.plot(date_time, smoker_temp, color = 'm')
     ax.plot(date_time, meat_temp, color = 'g')
     myFmt = mdates.DateFormatter('%H:%M')
     ax.xaxis.set_major_formatter(myFmt)
-    ax.tick_params(axis='x', rotation=45)
+    ax.tick_params(axis='x', rotation=90)
     ax.set_xlabel("Time")
     ax.set_ylabel("Temperature")
+    ax.set_ylim(bottom=0)
     ax.minorticks_on()
-    xloc = mdates.MinuteLocator(interval = 15)
+    xloc = mdates.MinuteLocator(interval = 10)
     ax.xaxis.set_major_locator(xloc)
     ax.xaxis.set_minor_locator(AutoMinorLocator())
     dt = date_time[0] - timedelta(minutes=date_time[0].minute, seconds=date_time[0].second)
     ax.set_xlim(left=dt)
-    ax.grid(which='minor', linestyle='-', linewidth='1.0')
+    ax.grid(which='both', linestyle='-', linewidth=0.5)
     fig.autofmt_xdate()
 
     return embed_plot(fig)
@@ -123,7 +124,7 @@ def plot_future():
     # Generate future time indices for the forecast
     last_time = date_time[-1]
     future_times = pd.date_range(start=last_time, periods=FORECAST_STEPS + 1, freq='s')[1:]
-    
+
     fig = Figure(figsize=(10, 5))
     ax = fig.subplots()
 
@@ -139,16 +140,17 @@ def plot_future():
 
     myFmt = mdates.DateFormatter('%H:%M')
     ax.xaxis.set_major_formatter(myFmt)
-    ax.tick_params(axis='x', rotation=45)
+    ax.tick_params(axis='x', rotation=90)
     ax.set_xlabel("Time")
     ax.set_ylabel("Temperature")
+    ax.set_ylim(bottom=0)
     ax.minorticks_on()
-    xloc = mdates.MinuteLocator(interval = 15)
+    xloc = mdates.MinuteLocator(interval = 10)
     ax.xaxis.set_major_locator(xloc)
     ax.xaxis.set_minor_locator(AutoMinorLocator())
     dt = date_time[0] - timedelta(minutes=date_time[0].minute, seconds=date_time[0].second)
     ax.set_xlim(left=dt)
-    ax.grid(which='minor', linestyle='-', linewidth='1.0')
+    ax.grid(which='both', linestyle='-', linewidth=0.5)
     fig.autofmt_xdate()
     ax.legend()
 
