@@ -2,3 +2,5 @@ temperature.log
 .temperature.log.swp
 nohup.out
 logs/*
+plotly/
+
