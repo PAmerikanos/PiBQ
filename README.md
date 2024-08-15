@@ -23,6 +23,8 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
     ```
 4. Clone Git repo: `git clone https://github.com/PAmerikanos/RT_temperature_dashboard.git`
 
+**CAUTION:** Do not run VSCode server on the RPi for development as it overloads the device and freezes it.
+
 ## Operation
 1. Turn RPi on and connect it to the Internet. Automatic WiFi connection is set to `Pefki` SSID.
 2. On computer within the LAN:
