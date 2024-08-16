@@ -16,10 +16,10 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
     #sudo apt-get install python3-pip
     #sudo apt-get install libatlas-base-dev
     
-    python -m venv ~/venv/default
-    source ~/venv/default/bin/activate
+    python -m venv ~/venv/rt_plotly
+    source ~/venv/rt_plotly/bin/activate
 
-    sudo pip3 install mcp9600  matplotlib statsmodels pandas flask
+    sudo pip3 install mcp9600 dash pandas statsmodels
     ```
 4. Clone Git repo: `git clone https://github.com/PAmerikanos/RT_temperature_dashboard.git`
 
@@ -32,20 +32,18 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
     2. In one terminal record temperature in realtime to `temperature.log` (every run overwrites the last one):
         1. Connect to RPi using SSH: `ssh pi@192.168.1.XXX` / `pass: 0000`
         2. `cd RT_temperature_dashboard`
-        3. `source ~/venv/default/bin/activate`
-        4. `nohup python3 log_temp.py > ./logs/log_temp.log 2>&1 &`
-    3. In a separate terminal run the Flask server:
+        3. `source ~/venv/rt_plotly/bin/activate`
+        4. `nohup python3 record_temp.py.py > ./logs/record_temp.log 2>&1 &`
+    3. In a separate terminal run the Plotly Dash server:
         1. Connect to RPi using SSH: `ssh pi@192.168.1.XXX` / `pass: 0000`
         2. `cd RT_temperature_dashboard`
-        3. `source ~/venv/default/bin/activate`
-        4. `nohup python3 run_flask.py > ./logs/run_flask.log 2>&1 &`
+        3. `source ~/venv/rt_plotly/bin/activate`
+        4. `nohup python3 app.py > ./logs/app.log 2>&1 &`
 
     `Nohup` allows the recording & serving to continue even if WiFi or SSH connection is lost.
     - `tail -f nohup.out` to monitor progress/nohup's output.
     - `kill <PID>` to kill either process.
-5. On client device open browser at:
-    - `http://192.168.1.XXX:5000/past` for past & present recording
-    - `http://192.168.1.XXX:5000/future` for 5-minute future prediction
+5. On client device open browser at `http://192.168.1.XXX:8050`
 
 ## References
 - https://www.pi-shop.ch/thermocouple-amplifier-breakout

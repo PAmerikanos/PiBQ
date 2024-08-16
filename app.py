@@ -1,5 +1,4 @@
 from dash import Dash, html, dcc, callback, Output, Input
-import plotly.express as px
 import plotly.graph_objs as go
 import pandas as pd
 from statsmodels.tsa.arima.model import ARIMA
@@ -37,7 +36,7 @@ app.layout = [
                     html.Label('Meat minimum temperature (C)', style={'width': '250px', 'textAlign': 'right', 'marginRight': '10px'}),
                     dcc.Input(id='meat_min_temp', type='number', min=0, max=200, step=1, value=0),
                 ],
-                style={'display': 'flex', 'alignItems': 'center'}
+                style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}
             ),
             html.Div(
                 [
@@ -51,7 +50,14 @@ app.layout = [
                     html.Label('Forecast next minutes', style={'width': '250px', 'textAlign': 'right', 'marginRight': '10px'}),
                     dcc.Input(id='forecast_minutes', type='number', min=0, max=120, step=10, value=10),
                 ],
-                style={'display': 'flex', 'alignItems': 'center'}
+                style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}
+            ),
+            html.Div(
+                [
+                    html.Label('Rolling average window', style={'width': '250px', 'textAlign': 'right', 'marginRight': '10px'}),
+                    dcc.Input(id='rolling_avg_window', type='number', min=1, max=1000, step=1, value=9),
+                ],
+                style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}
             ),
         ],
         style={
@@ -65,7 +71,7 @@ app.layout = [
     # Interval component for auto-refreshing every 10 sec (300000 milliseconds)
     dcc.Interval(
         id='interval-component',
-        interval=10*1000,  # 300 seconds = 5 minutes
+        interval=300*1000,  # 300 seconds = 5 minutes
         n_intervals=0  # Number of times the interval has passed
     )
 ]
@@ -76,16 +82,21 @@ app.layout = [
     Input("smoker_target_temp", "value"),
     Input("meat_min_temp", "value"),
     Input("past_minutes", "value"),
-    Input("forecast_minutes", "value")
+    Input("forecast_minutes", "value"),
+    Input("rolling_avg_window", "value")
 )
-def update_graph(n_intervals, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes):
+def update_graph(n_intervals, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window):
     # Load the CSV file
     column_names = ['datetime', 'smoker_temp', 'meat_temp']
-    df = pd.read_csv('../logs/temperature.log', header=None, names=column_names)
-    df['datetime'] = pd.to_datetime(df['datetime'], format='mixed').dt.strftime('%H:%M:%S')
+    df = pd.read_csv('./logs/temperature.log', header=None, names=column_names)
 
-    past_steps = 60 * past_minutes
-    forecast_steps = 60 * forecast_minutes
+    df['datetime'] = pd.to_datetime(df['datetime'], format='mixed').dt.strftime('%H:%M:%S')
+    df['smoker_temp'] = df['smoker_temp'].rolling(window=rolling_avg_window).mean()
+    df['meat_temp'] = df['meat_temp'].rolling(window=rolling_avg_window).mean()
+
+
+    past_steps = past_minutes * 60
+    forecast_steps = forecast_minutes * 60
 
     # Display onle last 10 minutes
     date_time = df['datetime'].tail(past_steps).to_list()
@@ -110,19 +121,31 @@ def update_graph(n_intervals, smoker_target_temp, meat_min_temp, past_minutes, f
     fig.add_hline(y=smoker_target_temp, line_width=1, line_color="blue")
     fig.add_hline(y=meat_min_temp, line_width=1, line_color="red")
 
-    # Predicted temperature values
+    # Predicted temperature values with confidence intervals
+    # Smoker Temperature
     fig.add_scatter(x=future_times, y=smoker_forecast, mode='lines', line=dict(color='cyan'), name='Predicted Smoker Temperature')
-    #ax.fill_between(future_times, smoker_confidence_intervals[:, 0], smoker_confidence_intervals[:, 1], color='pink', alpha=0.3)
-    
+    fig.add_scatter(x=future_times, y=smoker_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
+    fig.add_scatter(x=future_times, y=smoker_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(0, 255, 255, 0.3)', line=dict(width=0), showlegend=False)
+
+    # Meat Temperature
     fig.add_scatter(x=future_times, y=meat_forecast, mode='lines', line=dict(color='pink'), name='Predicted Meat Temperature')
-    #ax.fill_between(future_times, meat_confidence_intervals[:, 0], meat_confidence_intervals[:, 1], color='cyan', alpha=0.3)
+    fig.add_scatter(x=future_times, y=meat_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
+    fig.add_scatter(x=future_times, y=meat_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(255, 105, 180, 0.3)', line=dict(width=0), showlegend=False)
+
 
     # Update layout labels
     fig.update_layout(
         xaxis_title='Time',
         yaxis_title='Temperature',
-        legend_title='Legend'
+        legend=dict(
+            x=0,  # x-coordinate of the legend (0 is far left)
+            y=0,  # y-coordinate of the legend (0 is bottom)
+            xanchor='left',  # anchor legend to the left
+            yanchor='bottom',  # anchor legend to the bottom
+            bgcolor='rgba(255, 255, 255, 0.5)'  # Optional: semi-transparent background
+        )
     )
+
     return fig
 
 
