@@ -12,14 +12,13 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
     - https://www.raspberrypi-spy.co.uk/2018/02/change-raspberry-pi-i2c-bus-speed/
 3. Install dependencies: 
     ```
-    sudo apt-get update
-    #sudo apt-get install python3-pip
-    #sudo apt-get install libatlas-base-dev
+    sudo apt update
+    sudo apt install python3.11 python3.11-venv python3.11-dev -y
     
-    python -m venv ~/venv/rt_plotly
-    source ~/venv/rt_plotly/bin/activate
+    python3.11 -m venv rt_plotly
+    source rt_plotly/bin/activate
 
-    sudo pip3 install mcp9600 dash pandas statsmodels
+    pip install mcp9600 dash pandas statsmodels
     ```
 4. Clone Git repo: `git clone https://github.com/PAmerikanos/RT_temperature_dashboard.git`
 
@@ -33,7 +32,7 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
         1. Connect to RPi using SSH: `ssh pi@192.168.1.XXX` / `pass: 0000`
         2. `cd RT_temperature_dashboard`
         3. `source ~/venv/rt_plotly/bin/activate`
-        4. `nohup python3 record_temp.py.py > ./logs/record_temp.log 2>&1 &`
+        4. `nohup python3 record_temp.py > ./logs/record_temp.log 2>&1 &`
     3. In a separate terminal run the Plotly Dash server:
         1. Connect to RPi using SSH: `ssh pi@192.168.1.XXX` / `pass: 0000`
         2. `cd RT_temperature_dashboard`
