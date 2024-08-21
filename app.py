@@ -1,7 +1,9 @@
 from dash import Dash, html, dcc, callback, Output, Input
 import plotly.graph_objs as go
-import pandas as pd
 from statsmodels.tsa.arima.model import ARIMA
+import pandas as pd
+import os
+from datetime import datetime
 
 
 def forecast_temperature(temp, fsteps):
@@ -14,6 +16,36 @@ def forecast_temperature(temp, fsteps):
 
     return forecast, confidence_intervals
 
+def parse_temperature_data():
+    # Parse all temperature data from today's sessions
+
+    # Get today's date in YYYYMMDD format
+    today_date = datetime.now().strftime('%Y%m%d')
+
+    # Define the path to the folder
+    folder_path = './temperature/'
+
+    # List all files in the directory
+    all_files = os.listdir(folder_path)
+
+    # Filter files that start with today's date and end with .csv
+    csv_files = [f for f in all_files if f.startswith(today_date) and f.endswith('.csv')]
+
+    # List to hold dataframes
+    df_list = []
+
+    # Load each csv file into a dataframe and append to list
+    for file in csv_files:
+        file_path = os.path.join(folder_path, file)
+        df = pd.read_csv(file_path, header=None, names=['datetime', 'smoker_temp', 'meat_temp'])
+        df_list.append(df)
+
+    # Concatenate all dataframes into a single dataframe
+    combined_df = pd.concat(df_list, ignore_index=True)
+
+    # Return the combined dataframe
+    return combined_df
+
 
 app = Dash()
 
@@ -24,6 +56,13 @@ app.layout = [
 
     html.Div(
         [
+            html.Div(
+                [
+                    #html.Label('Update graph', style={'width': '250px', 'textAlign': 'right', 'marginRight': '10px'}),
+                    html.Button('Update graph', id='update-button')
+                ],
+                style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}
+            ),
             html.Div(
                 [
                     html.Label('Smoker target temperature (C)', style={'width': '250px', 'textAlign': 'right', 'marginRight': '10px'}),
@@ -66,19 +105,20 @@ app.layout = [
             'alignItems': 'center',
             'justifyContent': 'center',
         }
-    ),
-
-    # Interval component for auto-refreshing every 10 sec (300000 milliseconds)
-    dcc.Interval(
-        id='interval-component',
-        interval=300*1000,  # 300 seconds = 5 minutes
-        n_intervals=0  # Number of times the interval has passed
     )
+
+    # # Interval component for auto-refreshing every 10 sec (300000 milliseconds)
+    # dcc.Interval(
+    #     id='interval-component',
+    #     interval=300*1000,  # 300 seconds = 5 minutes
+    #     n_intervals=0  # Number of times the interval has passed
+    # )
 ]
 
 @callback(
     Output('graph-content', 'figure'),
-    Input('interval-component', 'n_intervals'),
+    #Input('interval-component', 'n_intervals'),
+    Input('update-button', 'n_clicks'),
     Input("smoker_target_temp", "value"),
     Input("meat_min_temp", "value"),
     Input("past_minutes", "value"),
@@ -86,10 +126,8 @@ app.layout = [
     Input("rolling_avg_window", "value")
 )
 def update_graph(n_intervals, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window):
-    # Load the CSV file
-    column_names = ['datetime', 'smoker_temp', 'meat_temp']
-    df = pd.read_csv('./logs/temperature.log', header=None, names=column_names)
-
+    # Parse temperature data
+    df = parse_temperature_data()
     df['datetime'] = pd.to_datetime(df['datetime'], format='mixed').dt.strftime('%H:%M:%S')
     df['smoker_temp'] = df['smoker_temp'].rolling(window=rolling_avg_window).mean()
     df['meat_temp'] = df['meat_temp'].rolling(window=rolling_avg_window).mean()
@@ -118,8 +156,8 @@ def update_graph(n_intervals, smoker_target_temp, meat_min_temp, past_minutes, f
     fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', line=dict(color='red'), name='Meat Temperature')
 
     # Target temperature values
-    fig.add_hline(y=smoker_target_temp, line_width=1, line_color="blue")
-    fig.add_hline(y=meat_min_temp, line_width=1, line_color="red")
+    fig.add_hline(y=smoker_target_temp, line_width=1, line_color="blue", line_dash="dash")
+    fig.add_hline(y=meat_min_temp, line_width=1, line_color="red", line_dash="dash")
 
     # Predicted temperature values with confidence intervals
     # Smoker Temperature
@@ -135,8 +173,19 @@ def update_graph(n_intervals, smoker_target_temp, meat_min_temp, past_minutes, f
 
     # Update layout labels
     fig.update_layout(
+        width=1280,  # Set the width of the figure
+        height=720,  # Set the height of the figure
         xaxis_title='Time',
         yaxis_title='Temperature',
+        xaxis=dict(
+            tickangle=180  # Rotate x-axis labels by 180 degrees
+        ),
+        yaxis=dict(
+            tickmode='linear',  # Set tick mode to linear
+            tick0=0,            # Starting tick (0 for integers starting from 0)
+            dtick=1,            # Interval of 1 for every integer
+            nticks=20           # Increase the number of gridlines on the y-axis
+        ),
         legend=dict(
             x=0,  # x-coordinate of the legend (0 is far left)
             y=0,  # y-coordinate of the legend (0 is bottom)
