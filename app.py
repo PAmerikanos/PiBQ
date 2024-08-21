@@ -30,6 +30,7 @@ def parse_temperature_data():
 
     # Filter files that start with today's date and end with .csv
     csv_files = [f for f in all_files if f.startswith(today_date) and f.endswith('.csv')]
+    csv_files.sort()
 
     # List to hold dataframes
     df_list = []
@@ -173,19 +174,19 @@ def update_graph(n_intervals, smoker_target_temp, meat_min_temp, past_minutes, f
 
     # Update layout labels
     fig.update_layout(
-        width=1280,  # Set the width of the figure
-        height=720,  # Set the height of the figure
+#        width=1280,  # Set the width of the figure
+#        height=720,  # Set the height of the figure
         xaxis_title='Time',
         yaxis_title='Temperature',
         xaxis=dict(
-            tickangle=180  # Rotate x-axis labels by 180 degrees
+            tickangle=270  # Rotate x-axis labels by 180 degrees
         ),
-        yaxis=dict(
-            tickmode='linear',  # Set tick mode to linear
-            tick0=0,            # Starting tick (0 for integers starting from 0)
-            dtick=1,            # Interval of 1 for every integer
-            nticks=20           # Increase the number of gridlines on the y-axis
-        ),
+#        yaxis=dict(
+#            tickmode='linear',  # Set tick mode to linear
+#            tick0=0,            # Starting tick (0 for integers starting from 0)
+#            dtick=1,            # Interval of 1 for every integer
+#            nticks=20           # Increase the number of gridlines on the y-axis
+#        ),
         legend=dict(
             x=0,  # x-coordinate of the legend (0 is far left)
             y=0,  # y-coordinate of the legend (0 is bottom)
