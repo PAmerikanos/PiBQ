@@ -3,4 +3,5 @@ temperature.log
 nohup.out
 logs/*
 plotly/
-
+rt_plotly/
+temperature/*
