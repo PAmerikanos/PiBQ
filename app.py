@@ -1,20 +1,70 @@
 from dash import Dash, html, dcc, callback, Output, Input
 import plotly.graph_objs as go
-from statsmodels.tsa.arima.model import ARIMA
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+import numpy as np
 import pandas as pd
 import os
 from datetime import datetime
 
 
-def forecast_temperature(temp, fsteps):
-    # Fit an ARIMA model and predict the next forecast_steps with confidence intervals
-    model = ARIMA(temp, order=(5,1,0))
-    model_fit = model.fit()
-    forecast_result = model_fit.get_forecast(steps=fsteps)
-    forecast = forecast_result.predicted_mean
-    confidence_intervals = forecast_result.conf_int()
+# def forecast_temperature(temp, fsteps):
+#     # Fit an ARIMA model and predict the next forecast_steps with confidence intervals
+#     model = ARIMA(temp, order=(5,1,0))
+#     model_fit = model.fit()
+#     forecast_result = model_fit.get_forecast(steps=fsteps)
+#     forecast = forecast_result.predicted_mean
+#     confidence_intervals = forecast_result.conf_int()
 
-    return forecast, confidence_intervals
+#     return forecast, confidence_intervals
+
+def convert_to_time(future_times, full_time_min):
+    # Reverse transformation for future_times
+    # Convert the future_times back to seconds
+    future_times_seconds = future_times.flatten()
+    
+    # Convert seconds to datetime by adding the minimum datetime
+    future_datetimes = [full_time_min + pd.Timedelta(seconds=sec) for sec in future_times_seconds]
+    
+    # Convert datetime to HH:MM:SS.f format
+    future_time_strings = [dt.strftime('%H:%M:%S.%f')[:-3] for dt in future_datetimes]
+    
+    return future_time_strings
+
+def forecast_temperature(temp_data, X, past_steps, future_times):
+    y = temp_data.values[-past_steps:]
+
+    # Polynomial Features Transformation (e.g., degree 2 for quadratic regression)
+    degree = 3
+    poly = PolynomialFeatures(degree=degree)
+    X_poly = poly.fit_transform(X)
+
+    # Fit the Polynomial Regression Model
+    model = LinearRegression()
+    model.fit(X_poly, y)
+
+    # Predict temperature values on the training set
+    y_pred = model.predict(X_poly)
+
+    # Calculate the Residual Sum of Squares
+    rss = np.sum((y - y_pred) ** 2)
+    n = len(y)
+    mse = rss / (n - degree - 1)  # Mean Squared Error
+    rmse = np.sqrt(mse)            # Root Mean Squared Error
+
+    # Predict for Future Times
+    future_times_poly = poly.transform(future_times)
+    future_predictions = model.predict(future_times_poly)
+
+    # Calculate Confidence Intervals
+    confidence_interval = 1.96 * rmse  # 95% confidence interval
+
+    # Upper and lower bounds
+    upper_bound = future_predictions + confidence_interval
+    lower_bound = future_predictions - confidence_interval
+
+    return future_predictions, upper_bound, lower_bound
 
 def parse_temperature_data():
     # Parse all temperature data from today's sessions
@@ -106,18 +156,10 @@ app.layout = [
             'justifyContent': 'center',
         }
     )
-
-    # # Interval component for auto-refreshing every 10 sec (300000 milliseconds)
-    # dcc.Interval(
-    #     id='interval-component',
-    #     interval=300*1000,  # 300 seconds = 5 minutes
-    #     n_intervals=0  # Number of times the interval has passed
-    # )
 ]
 
 @callback(
     Output('graph-content', 'figure'),
-    #Input('interval-component', 'n_intervals'),
     Input('update-button', 'n_clicks'),
     Input("smoker_target_temp", "value"),
     Input("meat_min_temp", "value"),
@@ -125,7 +167,7 @@ app.layout = [
     Input("forecast_minutes", "value"),
     Input("rolling_avg_window", "value")
 )
-def update_graph(n_intervals, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window):
+def update_graph(smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window):
     # Parse temperature data
     df = parse_temperature_data()
     df['datetime'] = pd.to_datetime(df['datetime'], format='mixed').dt.strftime('%H:%M:%S')
@@ -136,24 +178,42 @@ def update_graph(n_intervals, smoker_target_temp, meat_min_temp, past_minutes, f
     past_steps = past_minutes * 60
     forecast_steps = forecast_minutes * 60
 
-    # Display onle last 10 minutes
-    date_time = df['datetime'].tail(past_steps).to_list()
-    smoker_temp = df['smoker_temp'].tail(past_steps).to_list()
-    meat_temp = df['meat_temp'].tail(past_steps).to_list()
+    # # Display only last 10 minutes
+    # date_time = df['datetime'].tail(past_steps).to_list()
+    # smoker_temp = df['smoker_temp'].tail(past_steps).to_list()
+    # meat_temp = df['meat_temp'].tail(past_steps).to_list()
 
-    # Forecast temps
-    smoker_forecast, smoker_confidence_intervals = forecast_temperature(smoker_temp, forecast_steps)
-    meat_forecast, meat_confidence_intervals = forecast_temperature(meat_temp, forecast_steps)
+    # # Forecast temps
+    # smoker_forecast, smoker_confidence_intervals = forecast_temperature(smoker_temp, forecast_steps)
+    # meat_forecast, meat_confidence_intervals = forecast_temperature(meat_temp, forecast_steps)
 
-    # Generate future time indices for the forecast
-    future_times = pd.date_range(start=date_time[-1], periods=forecast_steps + 1, freq='s')[1:].time
+    # # Generate future time indices for the forecast
+    # future_times = pd.date_range(start=date_time[-1], periods=forecast_steps + 1, freq='s')[1:].time
 
+
+    # Reshape the data to fit the model
+    full_time = pd.to_datetime(df['datetime'], format='%H:%M:%S.%f')
+    full_time = (full_time - full_time.min()).dt.total_seconds().values.reshape(-1, 1)
+    X = full_time[-past_steps:]
+
+    # Predict for Future Times
+    last_value = X[-1] if np.isscalar(X[-1]) else X[-1][0]
+    int_list = range(int(last_value) + 1, int(last_value) + forecast_steps)
+    future_times = np.array([float(i) for i in int_list]).reshape(-1, 1)
+
+    full_time_min = pd.to_datetime(df['datetime'], format='%H:%M:%S.%f').min()  # define this based on your data
+    future_time_strings = convert_to_time(future_times, full_time_min)
+
+    smoker_forecast, smoker_upper_bound, smoker_lower_bound = forecast_temperature(df['smoker_temp'], X, past_steps, future_times)
+    meat_forecast, meat_upper_bound, meat_lower_bound = forecast_temperature(df['meat_temp'], X, past_steps, future_times)
 
     fig = go.Figure()
 
     # Past temperature values
-    fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', line=dict(color='blue'), name='Smoker Temperature')
-    fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', line=dict(color='red'), name='Meat Temperature')
+    fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', line=dict(color='blue'), name='Smoker Temperature - ALL')
+    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["smoker_temp"].tail(past_steps), mode='lines', line=dict(color='magenta'), name='Smoker Temperature - For prediction')
+    fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', line=dict(color='red'), name='Meat Temperature - ALL')
+    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["meat_temp"].tail(past_steps), mode='lines', line=dict(color='purple'), name='Meat Temperature- For prediction')
 
     # Target temperature values
     fig.add_hline(y=smoker_target_temp, line_width=1, line_color="blue", line_dash="dash")
@@ -161,14 +221,21 @@ def update_graph(n_intervals, smoker_target_temp, meat_min_temp, past_minutes, f
 
     # Predicted temperature values with confidence intervals
     # Smoker Temperature
-    fig.add_scatter(x=future_times, y=smoker_forecast, mode='lines', line=dict(color='cyan'), name='Predicted Smoker Temperature')
-    fig.add_scatter(x=future_times, y=smoker_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
-    fig.add_scatter(x=future_times, y=smoker_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(0, 255, 255, 0.3)', line=dict(width=0), showlegend=False)
+    fig.add_scatter(x=future_time_strings, y=smoker_forecast, mode='lines', line=dict(color='cyan'), name='Predicted Smoker Temperature')
+    #fig.add_scatter(x=future_time_strings, y=smoker_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
+    #fig.add_scatter(x=future_time_strings, y=smoker_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(0, 255, 255, 0.3)', line=dict(width=0), showlegend=False)
 
     # Meat Temperature
-    fig.add_scatter(x=future_times, y=meat_forecast, mode='lines', line=dict(color='pink'), name='Predicted Meat Temperature')
-    fig.add_scatter(x=future_times, y=meat_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
-    fig.add_scatter(x=future_times, y=meat_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(255, 105, 180, 0.3)', line=dict(width=0), showlegend=False)
+    fig.add_scatter(x=future_time_strings, y=meat_forecast, mode='lines', line=dict(color='pink'), name='Predicted Meat Temperature')
+    #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
+    #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(255, 105, 180, 0.3)', line=dict(width=0), showlegend=False)
+
+
+#    # plt.scatter(full_time, df['smoker_temp'], color='yellow', label='All recorded temperatures')
+#    # plt.scatter(X, y, color='blue', label='Observed data')
+#-    # plt.plot(X, y_pred, color='green', label='Polynomial fit')
+#    # plt.scatter(future_times, future_predictions, color='red', label='Predicted future values')
+    # plt.fill_between(future_times.flatten(), lower_bound, upper_bound, color='gray', alpha=0.5, label='Confidence Interval')
 
 
     # Update layout labels
