@@ -1,33 +1,13 @@
-# RT_temperature_dashboard
-Dashboard to monitor temperature readings from IoT sensor in real time.
+# Legacy Code
 
-## WARNING! For all commands below, try with and without `sudo`!
+**Caution: The code in this directory is considered legacy and is not actively maintained.**
 
-## Setup:
-1. Clone Git repo: `git clone https://github.com/PAmerikanos/RT_temperature_dashboard.git`
-2. Configure I2C: `raspi-config > Interface Options > I2C > Enable`
-3. Install Bokeh: 
-    ```
-    sudo apt-get update
-    sudo apt-get install python-pip
-    sudo apt-get install libatlas-base-dev
-    sudo pip install mcp9600
-    sudo pip install --upgrade bokeh==2.4.3
-    ```
-3. Test Bokeh: `sudo bokeh info`
+This directory contains older versions of scripts, experimental code, or components that have been superseded by newer implementations in the main project directory.
 
+## Key Points:
+- **No Active Maintenance**: These files are not regularly updated, tested, or guaranteed to work with the current version of the project.
+- **Potential Incompatibilities**: The code may use outdated libraries, APIs, or methodologies that are no longer compatible with the current system.
+- **Use at Your Own Risk**: If you choose to use or adapt any code from this directory, do so with caution. Thorough testing and understanding of the code will be necessary.
+- **For Reference Only**: This code is primarily kept for historical reference or for specific, isolated use cases where its functionality might still be relevant under controlled conditions.
 
-## To run:
-1. Connect to headless RPi: `ssh pi@192.168.1.XXX` / `pass: 0000`
-2. On SmokerPi under `/Documents/RT_temperature_dashboard/` initialize Bokeh server: `bokeh serve run_dashboard.py --allow-websocket-origin 192.168.1.XXX:5006`
-3. On client device open browser at `http://192.168.1.XXX:5006/run_dashboard`
-
-
-### References:
-- https://hub.gke2.mybinder.org/user/bokeh-bokeh-notebooks-5nbk1wx7/notebooks/tutorial/11%20-%20Running%20Bokeh%20Applications.ipynb
-- https://github.com/bokeh/bokeh/blob/2.3.3/examples/app/ohlc/main.py
-- https://atomar94.github.io/real-time-streaming-plots-with-python-and-bokeh/
-- https://stackoverflow.com/questions/43101497/how-do-stream-data-to-a-bokeh-plot-in-jupyter-with-a-high-refresh-rate#43126481
-- https://docs.bokeh.org/en/latest/docs/user_guide/data.html
-- https://stackoverflow.com/a/60711068
-- https://docs.bokeh.org/en/latest/docs/reference/command/subcommands/serve.html#network-configuration
+It is recommended to use the actively maintained versions of scripts and modules available in the root of the project or other designated active directories.

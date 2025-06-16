@@ -1,0 +1,9 @@
+# Core libraries for sensor interaction and data logging
+mcp9600
+
+# Libraries for the Dash web application, plotting, and data manipulation
+dash
+plotly
+pandas
+numpy
+scikit-learn

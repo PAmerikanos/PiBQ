@@ -19,86 +19,134 @@ from datetime import datetime
 
 #     return forecast, confidence_intervals
 
-def convert_to_time(future_times, full_time_min):
+def convert_to_time(future_times_seconds_array, min_datetime_reference):
+    """Converts an array of future times (in seconds) back to time strings.
+
+    Args:
+        future_times_seconds_array: NumPy array of future time offsets in seconds.
+        min_datetime_reference: The minimum datetime reference for converting seconds back to datetime objects.
+
+    Returns:
+        A list of time strings in HH:MM:SS.f format.
+    """
     # Reverse transformation for future_times
     # Convert the future_times back to seconds
-    future_times_seconds = future_times.flatten()
+    future_times_seconds_flat = future_times_seconds_array.flatten()
     
     # Convert seconds to datetime by adding the minimum datetime
-    future_datetimes = [full_time_min + pd.Timedelta(seconds=sec) for sec in future_times_seconds]
+    future_datetimes = [min_datetime_reference + pd.Timedelta(seconds=sec) for sec in future_times_seconds_flat]
     
     # Convert datetime to HH:MM:SS.f format
     future_time_strings = [dt.strftime('%H:%M:%S.%f')[:-3] for dt in future_datetimes]
     
     return future_time_strings
 
-def forecast_temperature(temp_data, X, past_steps, future_times):
-    y = temp_data.values[-past_steps:]
+def forecast_temperature(temperature_series, time_steps_seconds_array, past_steps_count, future_times_seconds_array):
+    """Forecasts temperature using polynomial regression.
+
+    Args:
+        temperature_series: Pandas Series of temperature data.
+        time_steps_seconds_array: NumPy array of time steps in seconds for training.
+        past_steps_count: Number of past data points to use for training.
+        future_times_seconds_array: NumPy array of future time steps in seconds for prediction.
+
+    Returns:
+        A tuple containing:
+            - future_predictions: NumPy array of predicted temperatures.
+            - upper_bound: NumPy array of the upper confidence interval.
+            - lower_bound: NumPy array of the lower confidence interval.
+    """
+    y_train = temperature_series.values[-past_steps_count:]
 
     # Polynomial Features Transformation (e.g., degree 2 for quadratic regression)
-    degree = 3
-    poly = PolynomialFeatures(degree=degree)
-    X_poly = poly.fit_transform(X)
+    polynomial_degree = 3
+    poly_features = PolynomialFeatures(degree=polynomial_degree)
+    time_steps_poly = poly_features.fit_transform(time_steps_seconds_array)
 
     # Fit the Polynomial Regression Model
     model = LinearRegression()
-    model.fit(X_poly, y)
+    model.fit(time_steps_poly, y_train)
 
     # Predict temperature values on the training set
-    y_pred = model.predict(X_poly)
+    y_train_pred = model.predict(time_steps_poly)
 
     # Calculate the Residual Sum of Squares
-    rss = np.sum((y - y_pred) ** 2)
-    n = len(y)
-    mse = rss / (n - degree - 1)  # Mean Squared Error
-    rmse = np.sqrt(mse)            # Root Mean Squared Error
+    residual_sum_of_squares = np.sum((y_train - y_train_pred) ** 2)
+    num_data_points = len(y_train)
+    # Mean Squared Error, adjusted for degrees of freedom
+    mean_squared_error_val = residual_sum_of_squares / (num_data_points - polynomial_degree - 1)
+    root_mean_squared_error = np.sqrt(mean_squared_error_val)            # Root Mean Squared Error
 
     # Predict for Future Times
-    future_times_poly = poly.transform(future_times)
+    future_times_poly = poly_features.transform(future_times_seconds_array)
     future_predictions = model.predict(future_times_poly)
 
     # Calculate Confidence Intervals
-    confidence_interval = 1.96 * rmse  # 95% confidence interval
+    # 1.96 corresponds to a 95% confidence interval
+    confidence_interval_margin = 1.96 * root_mean_squared_error
 
     # Upper and lower bounds
-    upper_bound = future_predictions + confidence_interval
-    lower_bound = future_predictions - confidence_interval
+    upper_bound = future_predictions + confidence_interval_margin
+    lower_bound = future_predictions - confidence_interval_margin
 
     return future_predictions, upper_bound, lower_bound
 
 def parse_temperature_data():
-    # Parse all temperature data from today's sessions
+    """Parses all temperature data from CSV files recorded on the current day.
 
+    The CSV files are expected to be in the './temperature/' directory and named
+    with the format YYYYMMDD_*.csv. Each CSV file should have three columns:
+    datetime, smoker_temp, meat_temp, without a header row.
+
+    Returns:
+        A pandas DataFrame containing the combined temperature data from all
+        relevant CSV files.
+    """
     # Get today's date in YYYYMMDD format
-    today_date = datetime.now().strftime('%Y%m%d')
+    today_date_str = datetime.now().strftime('%Y%m%d')
 
     # Define the path to the folder
-    folder_path = './temperature/'
+    data_folder_path = './temperature/'
 
     # List all files in the directory
-    all_files = os.listdir(folder_path)
+    try:
+        all_files = os.listdir(data_folder_path)
+    except FileNotFoundError:
+        # If the directory doesn't exist, return an empty DataFrame
+        return pd.DataFrame(columns=['datetime', 'smoker_temp', 'meat_temp'])
+
 
     # Filter files that start with today's date and end with .csv
-    csv_files = [f for f in all_files if f.startswith(today_date) and f.endswith('.csv')]
-    csv_files.sort()
+    csv_files_today = [f for f in all_files if f.startswith(today_date_str) and f.endswith('.csv')]
+    csv_files_today.sort()
 
     # List to hold dataframes
-    df_list = []
+    dataframe_list = []
 
     # Load each csv file into a dataframe and append to list
-    for file in csv_files:
-        file_path = os.path.join(folder_path, file)
-        df = pd.read_csv(file_path, header=None, names=['datetime', 'smoker_temp', 'meat_temp'])
-        df_list.append(df)
+    for csv_file_name in csv_files_today:
+        file_path = os.path.join(data_folder_path, csv_file_name)
+        try:
+            df = pd.read_csv(file_path, header=None, names=['datetime', 'smoker_temp', 'meat_temp'])
+            dataframe_list.append(df)
+        except pd.errors.EmptyDataError:
+            # Skip empty CSV files
+            print(f"Warning: Skipping empty CSV file: {file_path}")
+            continue
+
 
     # Concatenate all dataframes into a single dataframe
-    combined_df = pd.concat(df_list, ignore_index=True)
+    if not dataframe_list:
+        # Return an empty DataFrame if no valid CSV files were found
+        return pd.DataFrame(columns=['datetime', 'smoker_temp', 'meat_temp'])
+
+    combined_data_df = pd.concat(dataframe_list, ignore_index=True)
 
     # Return the combined dataframe
-    return combined_df
+    return combined_data_df
 
 
-app = Dash()
+app = Dash(__name__)
 
 app.layout = [
     #html.H1(children='Title of Dash App', style={'textAlign':'center'}),
@@ -164,107 +212,194 @@ app.layout = [
     Input('update-button', 'n_clicks'),
     Input("smoker_target_temp", "value"),
     Input("meat_min_temp", "value"),
-    Input("past_minutes", "value"),
-    Input("forecast_minutes", "value"),
-    Input("rolling_avg_window", "value")
+    Input("past_minutes", "value"), # Number of past minutes to use for prediction base
+    Input("forecast_minutes", "value"), # Number of future minutes to forecast
+    Input("rolling_avg_window", "value") # Window size for rolling average
 )
-def update_graph(smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window):
-    # Parse temperature data
-    df = parse_temperature_data()
-    df['datetime'] = pd.to_datetime(df['datetime'], format='mixed').dt.strftime('%H:%M:%S')
-    df['smoker_temp'] = df['smoker_temp'].rolling(window=rolling_avg_window).mean()
-    df['meat_temp'] = df['meat_temp'].rolling(window=rolling_avg_window).mean()
+def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window):
+    """
+    Updates the graph with current and forecasted temperature data.
 
+    This function is a Dash callback triggered by user inputs. It handles data parsing,
+    preprocessing, forecasting, and plotting.
+    """
+    # Pass input values directly to the helper function
+    processed_data = _prepare_temperature_data(
+        rolling_avg_window,
+        past_minutes,
+        forecast_minutes
+    )
+    if isinstance(processed_data, go.Figure):  # Error case, return figure directly
+        return processed_data
 
-    past_steps = past_minutes * 60
-    forecast_steps = forecast_minutes * 60
+    temperature_df, num_past_steps, num_forecast_steps = processed_data
 
-    # # Display only last 10 minutes
-    # date_time = df['datetime'].tail(past_steps).to_list()
-    # smoker_temp = df['smoker_temp'].tail(past_steps).to_list()
-    # meat_temp = df['meat_temp'].tail(past_steps).to_list()
+    # Ensure there's enough data for the 'past_steps'
+    if len(temperature_df) < num_past_steps:
+        return go.Figure(layout=dict(title=f"Not enough data for {past_minutes} minutes of history. Need {num_past_steps} data points, have {len(temperature_df)}."))
 
-    # # Forecast temps
-    # smoker_forecast, smoker_confidence_intervals = forecast_temperature(smoker_temp, forecast_steps)
-    # meat_forecast, meat_confidence_intervals = forecast_temperature(meat_temp, forecast_steps)
+    training_time_in_seconds, future_times_reshaped, future_time_strings = _prepare_time_series_for_forecast(
+        temperature_df, num_past_steps, num_forecast_steps
+    )
 
-    # # Generate future time indices for the forecast
-    # future_times = pd.date_range(start=date_time[-1], periods=forecast_steps + 1, freq='s')[1:].time
+    # Forecast temperatures
+    smoker_forecast, smoker_upper_bound, smoker_lower_bound = forecast_temperature(
+        temperature_df['smoker_temp'], training_time_in_seconds, num_past_steps, future_times_reshaped
+    )
+    meat_forecast, meat_upper_bound, meat_lower_bound = forecast_temperature(
+        temperature_df['meat_temp'], training_time_in_seconds, num_past_steps, future_times_reshaped
+    )
 
-
-    # Reshape the data to fit the model
-    full_time = pd.to_datetime(df['datetime'], format='%H:%M:%S.%f')
-    full_time = (full_time - full_time.min()).dt.total_seconds().values.reshape(-1, 1)
-    X = full_time[-past_steps:]
-
-    # Predict for Future Times
-    last_value = X[-1] if np.isscalar(X[-1]) else X[-1][0]
-    int_list = range(int(last_value) + 1, int(last_value) + forecast_steps)
-    future_times = np.array([float(i) for i in int_list]).reshape(-1, 1)
-
-    full_time_min = pd.to_datetime(df['datetime'], format='%H:%M:%S.%f').min()  # define this based on your data
-    future_time_strings = convert_to_time(future_times, full_time_min)
-
-    smoker_forecast, smoker_upper_bound, smoker_lower_bound = forecast_temperature(df['smoker_temp'], X, past_steps, future_times)
-    meat_forecast, meat_upper_bound, meat_lower_bound = forecast_temperature(df['meat_temp'], X, past_steps, future_times)
-
-    fig = go.Figure()
-
-    # Past temperature values
-    fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', line=dict(color='blue'), name='Smoker Temperature - ALL')
-    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["smoker_temp"].tail(past_steps), mode='lines', line=dict(color='magenta'), name='Smoker Temperature - For prediction')
-    fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', line=dict(color='red'), name='Meat Temperature - ALL')
-    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["meat_temp"].tail(past_steps), mode='lines', line=dict(color='purple'), name='Meat Temperature- For prediction')
-
-    # Target temperature values
-    fig.add_hline(y=smoker_target_temp, line_width=1, line_color="blue", line_dash="dash")
-    fig.add_hline(y=meat_min_temp, line_width=1, line_color="red", line_dash="dash")
-
-    # Predicted temperature values with confidence intervals
-    # Smoker Temperature
-    fig.add_scatter(x=future_time_strings, y=smoker_forecast, mode='lines', line=dict(color='cyan'), name='Predicted Smoker Temperature')
-    #fig.add_scatter(x=future_time_strings, y=smoker_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
-    #fig.add_scatter(x=future_time_strings, y=smoker_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(0, 255, 255, 0.3)', line=dict(width=0), showlegend=False)
-
-    # Meat Temperature
-    fig.add_scatter(x=future_time_strings, y=meat_forecast, mode='lines', line=dict(color='pink'), name='Predicted Meat Temperature')
-    #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
-    #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(255, 105, 180, 0.3)', line=dict(width=0), showlegend=False)
-
-
-#    # plt.scatter(full_time, df['smoker_temp'], color='yellow', label='All recorded temperatures')
-#    # plt.scatter(X, y, color='blue', label='Observed data')
-#-    # plt.plot(X, y_pred, color='green', label='Polynomial fit')
-#    # plt.scatter(future_times, future_predictions, color='red', label='Predicted future values')
-    # plt.fill_between(future_times.flatten(), lower_bound, upper_bound, color='gray', alpha=0.5, label='Confidence Interval')
-
-
-    # Update layout labels
-    fig.update_layout(
-#        width=1280,  # Set the width of the figure
-#        height=720,  # Set the height of the figure
-        xaxis_title='Time',
-        yaxis_title='Temperature',
-        xaxis=dict(
-            tickangle=270  # Rotate x-axis labels by 180 degrees
-        ),
-#        yaxis=dict(
-#            tickmode='linear',  # Set tick mode to linear
-#            tick0=0,            # Starting tick (0 for integers starting from 0)
-#            dtick=1,            # Interval of 1 for every integer
-#            nticks=20           # Increase the number of gridlines on the y-axis
-#        ),
-        legend=dict(
-            x=0,  # x-coordinate of the legend (0 is far left)
-            y=0,  # y-coordinate of the legend (0 is bottom)
-            xanchor='left',  # anchor legend to the left
-            yanchor='bottom',  # anchor legend to the bottom
-            bgcolor='rgba(255, 255, 255, 0.5)'  # Optional: semi-transparent background
-        )
+    # Create the plot
+    fig = _create_temperature_plot(
+        temperature_df, num_past_steps, future_time_strings,
+        smoker_forecast, smoker_upper_bound, smoker_lower_bound,
+        meat_forecast, meat_upper_bound, meat_lower_bound,
+        smoker_target_temp, meat_min_temp
     )
 
     return fig
 
 
+def _prepare_temperature_data(rolling_avg_window, past_minutes_input, forecast_minutes_input):
+    """
+    Loads, parses, and preprocesses temperature data.
+
+    Args:
+        rolling_avg_window: Window size for calculating the rolling average.
+        past_minutes_input: Number of past minutes of data to use.
+        forecast_minutes_input: Number of minutes into the future to forecast.
+
+    Returns:
+        A tuple (temperature_df, num_past_steps, num_forecast_steps) or a go.Figure on error.
+    """
+    temperature_df = parse_temperature_data()
+    if temperature_df.empty:
+        return go.Figure(layout=dict(title="No temperature data available for today."))
+
+    temperature_df['datetime'] = pd.to_datetime(temperature_df['datetime'], format='mixed').dt.strftime('%H:%M:%S')
+    # Apply rolling average
+    temperature_df['smoker_temp'] = temperature_df['smoker_temp'].rolling(window=rolling_avg_window).mean()
+    temperature_df['meat_temp'] = temperature_df['meat_temp'].rolling(window=rolling_avg_window).mean()
+    # Drop rows with NA values that were created by the rolling mean, especially at the beginning
+    temperature_df.dropna(subset=['smoker_temp', 'meat_temp'], inplace=True)
+
+    if temperature_df.empty:
+        return go.Figure(layout=dict(title="Not enough data points after applying rolling average."))
+
+    # Convert minutes to number of data points (assuming 1 data point per second)
+    num_past_steps = past_minutes_input * 60
+    num_forecast_steps = forecast_minutes_input * 60
+
+    return temperature_df, num_past_steps, num_forecast_steps
+
+
+def _prepare_time_series_for_forecast(df, num_past_steps, num_forecast_steps):
+    """
+    Prepares time series data for the forecasting model.
+
+    Args:
+        df: Pandas DataFrame with temperature data, including a 'datetime' column.
+        num_past_steps: Number of past data points to use for training.
+        num_forecast_steps: Number of future data points to predict.
+
+    Returns:
+        A tuple containing:
+            - training_time_in_seconds: NumPy array of time steps for training.
+            - future_times_reshaped: NumPy array of future time steps for prediction.
+            - future_time_strings: List of future time strings for plotting.
+    """
+    # Convert datetime strings to datetime objects
+    datetime_objects = pd.to_datetime(df['datetime'], format='%H:%M:%S.%f')
+    # Convert datetimes to seconds since the first record for numerical modeling
+    time_in_seconds = (datetime_objects - datetime_objects.min()).dt.total_seconds().values.reshape(-1, 1)
+
+    # Select the most recent 'num_past_steps' for training data
+    training_time_in_seconds = time_in_seconds[-num_past_steps:]
+
+    # Generate future time steps for prediction
+    # Start from the second after the last recorded time
+    last_recorded_time_seconds = training_time_in_seconds[-1][0]
+    future_time_offsets_seconds = np.arange(1, num_forecast_steps + 1) # e.g., 1s, 2s, ... up to num_forecast_steps
+    future_times_absolute_seconds = last_recorded_time_seconds + future_time_offsets_seconds
+    future_times_reshaped = future_times_absolute_seconds.reshape(-1, 1) # Reshape for model input
+
+    # Convert future time seconds back to HH:MM:SS.f strings for plotting
+    min_datetime_reference = datetime_objects.min() # Use the first datetime as a reference point
+    future_time_strings = convert_to_time(future_times_reshaped, min_datetime_reference)
+
+    return training_time_in_seconds, future_times_reshaped, future_time_strings
+
+
+def _create_temperature_plot(df, num_past_steps, future_time_strings,
+                             smoker_forecast, smoker_upper_bound, smoker_lower_bound,
+                             meat_forecast, meat_upper_bound, meat_lower_bound,
+                             smoker_target_temp, meat_min_temp):
+    """
+    Creates the Plotly figure for displaying temperature data and forecasts.
+
+    Args:
+        df: DataFrame containing historical temperature data.
+        num_past_steps: Number of past data points used for prediction base.
+        future_time_strings: List of time strings for the x-axis of forecast data.
+        smoker_forecast: Array of forecasted smoker temperatures.
+        smoker_upper_bound: Array for smoker forecast upper confidence bound.
+        smoker_lower_bound: Array for smoker forecast lower confidence bound.
+        meat_forecast: Array of forecasted meat temperatures.
+        meat_upper_bound: Array for meat forecast upper confidence bound.
+        meat_lower_bound: Array for meat forecast lower confidence bound.
+        smoker_target_temp: Target temperature for the smoker.
+        meat_min_temp: Minimum target temperature for the meat.
+
+    Returns:
+        A Plotly Figure object.
+    """
+    fig = go.Figure()
+
+    # Plotting historical temperature data
+    # Full history
+    fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', line=dict(color='blue'), name='Smoker Temp (All)')
+    fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', line=dict(color='red'), name='Meat Temp (All)')
+    # Highlighted portion used for prediction
+    fig.add_scatter(x=df["datetime"].tail(num_past_steps), y=df["smoker_temp"].tail(num_past_steps), mode='lines', line=dict(color='magenta', width=2), name='Smoker Temp (for Prediction)')
+    fig.add_scatter(x=df["datetime"].tail(num_past_steps), y=df["meat_temp"].tail(num_past_steps), mode='lines', line=dict(color='purple', width=2), name='Meat Temp (for Prediction)')
+
+    # Add target temperature lines
+    if smoker_target_temp is not None:
+        fig.add_hline(y=smoker_target_temp, line_width=1, line_color="blue", line_dash="dash", name="Smoker Target Temp")
+    if meat_min_temp is not None:
+        fig.add_hline(y=meat_min_temp, line_width=1, line_color="red", line_dash="dash", name="Meat Min Temp")
+
+    # Plotting predicted temperature values with confidence intervals
+    # Smoker Temperature Forecast
+    fig.add_scatter(x=future_time_strings, y=smoker_forecast, mode='lines', line=dict(color='cyan'), name='Predicted Smoker Temp')
+    fig.add_scatter(x=future_time_strings, y=smoker_lower_bound, mode='lines', line=dict(width=0), showlegend=False)
+    fig.add_scatter(x=future_time_strings, y=smoker_upper_bound, mode='lines', fill='tonexty', fillcolor='rgba(0, 255, 255, 0.2)', line=dict(width=0), name='Smoker Confidence Interval')
+
+    # Meat Temperature Forecast
+    fig.add_scatter(x=future_time_strings, y=meat_forecast, mode='lines', line=dict(color='pink'), name='Predicted Meat Temp')
+    fig.add_scatter(x=future_time_strings, y=meat_lower_bound, mode='lines', line=dict(width=0), showlegend=False)
+    fig.add_scatter(x=future_time_strings, y=meat_upper_bound, mode='lines', fill='tonexty', fillcolor='rgba(255, 105, 180, 0.2)', line=dict(width=0), name='Meat Confidence Interval')
+
+    # Update layout labels and overall appearance
+    fig.update_layout(
+        xaxis_title='Time',
+        yaxis_title='Temperature (C)',
+        xaxis=dict(tickangle=270), # Rotate x-axis labels for better readability
+        legend=dict(
+            x=0.01, y=0.01, # Position legend at bottom-left
+            xanchor='left', yanchor='bottom',
+            bgcolor='rgba(255, 255, 255, 0.6)' # Semi-transparent background
+        ),
+        margin=dict(l=40, r=40, t=40, b=40) # Adjust margins for a tighter layout
+    )
+    return fig
+
+
 if __name__ == '__main__':
+    # Ensure the temperature data directory exists before starting the app
+    temperature_data_dir = './temperature/'
+    if not os.path.exists(temperature_data_dir):
+        os.makedirs(temperature_data_dir)
+        print(f"Created directory: {temperature_data_dir}")
     app.run(host='0.0.0.0', port=8050, debug=True, threaded=True)
