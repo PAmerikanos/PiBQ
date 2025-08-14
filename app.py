@@ -121,6 +121,7 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
     df['datetime'] = pd.to_datetime(df['datetime'], format='mixed').dt.strftime('%H:%M:%S.%f')
     df['smoker_temp'] = df['smoker_temp'].rolling(window=rolling_avg_window).mean()
     df['meat_temp'] = df['meat_temp'].rolling(window=rolling_avg_window).mean()
+    df.dropna(how='any', inplace=True)
 
 
     past_steps = past_minutes * 60

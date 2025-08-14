@@ -18,7 +18,6 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
     python3.11 -m venv pibq
     source pibq/bin/activate
 
-    pip install mcp9600 dash pandas statsmodels
     pip install -r requirements.txt
     ```
 4. Set up git repo:
