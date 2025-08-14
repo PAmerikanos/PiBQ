@@ -109,6 +109,7 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
     # Parse temperature data
     df = parse_temperature_data()
     df['datetime'] = pd.to_datetime(df['datetime'], format='mixed').dt.strftime('%H:%M:%S')
+    df = df.drop_duplicates(subset=['datetime'], keep='first') # Remove duplicate rows based on similar datetime, keeping first occurrence
     df['smoker_temp'] = df['smoker_temp'].rolling(window=rolling_avg_window).mean()
     df['meat_temp'] = df['meat_temp'].rolling(window=rolling_avg_window).mean()
     df.dropna(how='any', inplace=True)
@@ -131,16 +132,14 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
 
 
     # Reshape the data to fit the model
-    full_time = pd.to_datetime(df['datetime'], format='%H:%M:%S')
-    full_time = (full_time - full_time.min()).dt.total_seconds().values.reshape(-1, 1)
+    full_time_min = df['datetime'].min()  # define this based on your data
+    full_time = (df['datetime'] - full_time_min).dt.total_seconds().values.reshape(-1, 1)
     X = full_time[-past_steps:]
 
     # Predict for Future Times
     last_value = X[-1] if np.isscalar(X[-1]) else X[-1][0]
     int_list = range(int(last_value) + 1, int(last_value) + forecast_steps)
     future_times = np.array([float(i) for i in int_list]).reshape(-1, 1)
-
-    full_time_min = pd.to_datetime(df['datetime'], format='%H:%M:%S').min()  # define this based on your data
     future_time_strings = convert_to_time(future_times, full_time_min)
 
     smoker_forecast, smoker_upper_bound, smoker_lower_bound = forecast_temperature(df['smoker_temp'], X, past_steps, future_times)
