@@ -159,10 +159,11 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
     fig = go.Figure()
 
     # Past temperature values
-    fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', line=dict(color='blue'), name='Smoker Temperature - ALL')
-    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["smoker_temp"].tail(past_steps), mode='lines', line=dict(color='magenta'), name='Smoker Temperature - For prediction')
-    fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', line=dict(color='red'), name='Meat Temperature - ALL')
-    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["meat_temp"].tail(past_steps), mode='lines', line=dict(color='purple'), name='Meat Temperature- For prediction')
+    fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', line=dict(color='blue'), name='Target Smoker Temp')
+    fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', line=dict(color='red'), name='Minimum Meat Temp')
+    
+    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["smoker_temp"].tail(past_steps), mode='lines', line=dict(color='magenta'), name='Actual Smoker Temp')
+    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["meat_temp"].tail(past_steps), mode='lines', line=dict(color='purple'), name='Actual Meat Temp')
 
     # Target temperature values
     fig.add_hline(y=smoker_target_temp, line_width=1, line_color="blue", line_dash="dash")
@@ -170,12 +171,12 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
 
     # Predicted temperature values with confidence intervals
     # Smoker Temperature
-    fig.add_scatter(x=future_time_strings, y=smoker_forecast, mode='lines', line=dict(color='cyan'), name='Predicted Smoker Temperature')
+    fig.add_scatter(x=future_time_strings, y=smoker_forecast, mode='lines', line=dict(color='cyan'), name='Predicted Smoker Temp')
     #fig.add_scatter(x=future_time_strings, y=smoker_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
     #fig.add_scatter(x=future_time_strings, y=smoker_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(0, 255, 255, 0.3)', line=dict(width=0), showlegend=False)
 
     # Meat Temperature
-    fig.add_scatter(x=future_time_strings, y=meat_forecast, mode='lines', line=dict(color='pink'), name='Predicted Meat Temperature')
+    fig.add_scatter(x=future_time_strings, y=meat_forecast, mode='lines', line=dict(color='pink'), name='Predicted Meat Temp')
     #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
     #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(255, 105, 180, 0.3)', line=dict(width=0), showlegend=False)
 
