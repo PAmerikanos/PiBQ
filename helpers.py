@@ -26,7 +26,7 @@ def convert_to_time(future_times, full_time_min):
     future_datetimes = [full_time_min + pd.Timedelta(seconds=sec) for sec in future_times_seconds]
     
     # Convert datetime to HH:MM:SS.f format
-    future_time_strings = [dt.strftime('%H:%M:%S.%f')[:-3] for dt in future_datetimes]
+    future_time_strings = [dt.strftime('%H:%M:%S')[:-3] for dt in future_datetimes]
     
     return future_time_strings
 

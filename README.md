@@ -1,5 +1,5 @@
 # PiBQ
-Dashboard to monitor temperature readings from IoT sensor in real time.
+Real-time BBQ temperature monitoring dashboard
 
 ## Setup
 1. Configure I2C: `raspi-config > Interface Options > I2C > Enable`

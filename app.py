@@ -6,9 +6,52 @@ from helpers import convert_to_time, forecast_temperature, parse_temperature_dat
 
 
 app = Dash(assets_folder='assets')
-app.title = 'PiBQ - Meat Monitoring'
+app.title = 'PiBQ - Real-time BBQ temperature monitoring dashboard'
 
-app.layout = [
+# Common styles
+input_style = {
+    'width': '120px',
+    'padding': '12px',
+    'borderRadius': '8px',
+    'border': '2px solid #e0e0e0',
+    'fontSize': '16px',
+    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+    'transition': 'border-color 0.3s ease',
+    'boxSizing': 'border-box'
+}
+
+label_style = {
+    'marginBottom': '8px',
+    'color': '#555',
+    'fontWeight': '600',
+    'fontSize': '14px',
+    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+}
+
+button_style = {
+    'padding': '14px 28px',
+    'backgroundColor': '#ff6b35',
+    'color': 'white',
+    'border': 'none',
+    'borderRadius': '8px',
+    'fontSize': '16px',
+    'fontWeight': '600',
+    'cursor': 'pointer',
+    'transition': 'background-color 0.3s ease',
+    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+    'boxShadow': '0 2px 4px rgba(0,0,0,0.1)'
+}
+
+card_style = {
+    'backgroundColor': '#ffffff',
+    'padding': '20px',
+    'borderRadius': '12px',
+    'boxShadow': '0 2px 8px rgba(0,0,0,0.1)',
+    'marginBottom': '20px',
+    'border': '1px solid #f0f0f0'
+}
+
+app.layout = html.Div([
     # Header with logo and title
     html.Div([
         html.Img(
@@ -25,100 +68,286 @@ app.layout = [
                 'display': 'inline-block',
                 'verticalAlign': 'middle',
                 'margin': '0',
-                'color': '#666666',
+                'color': '#4a4a4a',
                 'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
                 'fontSize': '30px',
-                'fontWeight': 'bold',
-                'textShadow': '1px 1px 2px #cccccc'
+                'fontWeight': 'bold'
+            }
+        ),
+        html.P(
+            'Real-time BBQ temperature monitoring dashboard',
+            style={
+                'margin': '5px 0 0 0',
+                'color': '#777',
+                'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                'fontSize': '14px',
+                'fontStyle': 'italic'
             }
         )
     ], style={
         'textAlign': 'center',
         'padding': '20px',
-        'backgroundColor': '#f8f9fa',
-        'borderBottom': '2px solid #dddddd',
-        'marginBottom': '20px'
+        'backgroundColor': '#fafafa',
+        'borderBottom': '1px solid #e0e0e0',
+        'marginBottom': '0'
     }),
 
-    dcc.Graph(id='graph-content'),
+    # Main container with sidebar layout
+    html.Div([
+        # Sidebar for desktop
+        html.Div([
+            # Current Temperature Display
+            html.Div([
+                html.H3('Current Temperatures', style={
+                    'margin': '0 0 15px 0',
+                    'color': '#4a4a4a',
+                    'fontSize': '18px',
+                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+                }),
+                html.Div([
+                    html.Div([
+                        html.Span('🔥', style={'fontSize': '24px', 'marginRight': '8px'}),
+                        html.Span('Smoker:', style={'fontSize': '14px', 'color': '#666'}),
+                        html.Div(id='current-smoker-temp', children='--°C', style={
+                            'fontSize': '24px',
+                            'fontWeight': 'bold',
+                            'color': '#d2691e',
+                            'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+                        })
+                    ], style={'marginBottom': '10px'}),
+                    html.Div([
+                        html.Span('🥩', style={'fontSize': '24px', 'marginRight': '8px'}),
+                        html.Span('Meat:', style={'fontSize': '14px', 'color': '#666'}),
+                        html.Div(id='current-meat-temp', children='--°C', style={
+                            'fontSize': '24px',
+                            'fontWeight': 'bold',
+                            'color': '#8b4513',
+                            'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+                        })
+                    ])
+                ])
+            ], style=card_style),
 
-    html.Div(
-        [
-            html.Div(
-                [
-                    #html.Label('Update graph', style={'width': '250px', 'textAlign': 'right', 'marginRight': '10px'}),
-                    html.Button('Update graph', id='update-button')
-                ],
-                style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}
-            ),
-            html.Div(
-                [
-                    html.Label('Smoker target temperature (C)', style={'width': '250px', 'textAlign': 'right', 'marginRight': '10px'}),
-                    dcc.Input(id='smoker_target_temp', type='number', min=0, max=200, step=1, value=1),
-                ],
-                style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}
-            ),
-            html.Div(
-                [
-                    html.Label('Meat minimum temperature (C)', style={'width': '250px', 'textAlign': 'right', 'marginRight': '10px'}),
-                    dcc.Input(id='meat_min_temp', type='number', min=0, max=200, step=1, value=0),
-                ],
-                style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}
-            ),
-            html.Div(
-                [
-                    html.Label('Based on last minutes', style={'width': '250px', 'textAlign': 'right', 'marginRight': '10px'}),
-                    dcc.Input(id='past_minutes', type='number', min=0, max=120, step=10, value=10),
-                ],
-                style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}
-            ),
-            html.Div(
-                [
-                    html.Label('Forecast next minutes', style={'width': '250px', 'textAlign': 'right', 'marginRight': '10px'}),
-                    dcc.Input(id='forecast_minutes', type='number', min=0, max=120, step=10, value=10),
-                ],
-                style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}
-            ),
-            html.Div(
-                [
-                    html.Label('Rolling average window', style={'width': '250px', 'textAlign': 'right', 'marginRight': '10px'}),
-                    dcc.Input(id='rolling_avg_window', type='number', min=1, max=1000, step=1, value=9),
-                ],
-                style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}
-            ),
-        ],
-        style={
-            'display': 'flex',
-            'flexDirection': 'column',
-            'alignItems': 'center',
-            'justifyContent': 'center',
+            # Update Button
+            html.Div([
+                html.Button('Update Dashboard', id='update-button', style=button_style)
+            ], style={**card_style, 'textAlign': 'center'}),
+
+            # Temperature Settings
+            html.Div([
+                html.H4('Temperature Settings', style={
+                    'margin': '0 0 15px 0',
+                    'color': '#4a4a4a',
+                    'fontSize': '16px',
+                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+                }),
+                html.Div([
+                    html.Label('Smoker Target (°C)', style=label_style),
+                    dcc.Input(id='smoker_target_temp', type='number', min=0, max=200, step=1, value=107, style=input_style)
+                ], style={'marginBottom': '15px'}),
+                html.Div([
+                    html.Label('Meat Minimum (°C)', style=label_style),
+                    dcc.Input(id='meat_min_temp', type='number', min=0, max=200, step=1, value=74, style=input_style)
+                ])
+            ], style=card_style),
+
+            # Analysis Settings
+            html.Div([
+                html.H4('Analysis Settings', style={
+                    'margin': '0 0 15px 0',
+                    'color': '#4a4a4a',
+                    'fontSize': '16px',
+                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+                }),
+                html.Div([
+                    html.Label('History Window (min)', style=label_style),
+                    dcc.Input(id='past_minutes', type='number', min=0, max=120, step=10, value=30, style=input_style)
+                ], style={'marginBottom': '15px'}),
+                html.Div([
+                    html.Label('Forecast (min)', style=label_style),
+                    dcc.Input(id='forecast_minutes', type='number', min=0, max=120, step=10, value=30, style=input_style)
+                ], style={'marginBottom': '15px'}),
+                html.Div([
+                    html.Label('Smoothing Window', style=label_style),
+                    dcc.Input(id='rolling_avg_window', type='number', min=1, max=1000, step=1, value=9, style=input_style)
+                ])
+            ], style=card_style)
+
+        ], id='sidebar', style={
+            'width': '280px',
+            'padding': '20px',
+            'backgroundColor': '#f8f8f8',
+            'minHeight': '100vh',
+            'position': 'fixed',
+            'left': '0',
+            'top': '80px',
+            'overflowY': 'auto',
+            'borderRight': '1px solid #e0e0e0'
+        }),
+
+        # Main content area
+        html.Div([
+            dcc.Graph(id='graph-content', style={'height': '80vh'})
+        ], style={
+            'marginLeft': '320px',
+            'padding': '20px',
+            'backgroundColor': '#ffffff'
+        }, id='main-content')
+
+    ], style={'position': 'relative'}),
+
+    # Mobile controls (hidden on desktop)
+    html.Div([
+        # Current Temperature Display for Mobile
+        html.Div([
+            html.H3('Current Temperatures', style={
+                'margin': '0 0 15px 0',
+                'color': '#4a4a4a',
+                'fontSize': '18px',
+                'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                'textAlign': 'center'
+            }),
+            html.Div([
+                html.Div([
+                    html.Span('🔥 Smoker: ', style={'fontSize': '16px', 'color': '#666'}),
+                    html.Span(id='current-smoker-temp-mobile', children='--°C', style={
+                        'fontSize': '20px',
+                        'fontWeight': 'bold',
+                        'color': '#d2691e',
+                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+                    })
+                ], style={'marginBottom': '8px', 'textAlign': 'center'}),
+                html.Div([
+                    html.Span('🥩 Meat: ', style={'fontSize': '16px', 'color': '#666'}),
+                    html.Span(id='current-meat-temp-mobile', children='--°C', style={
+                        'fontSize': '20px',
+                        'fontWeight': 'bold',
+                        'color': '#8b4513',
+                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+                    })
+                ], style={'textAlign': 'center'})
+            ])
+        ], style={**card_style, 'margin': '20px'}),
+
+        html.Div([
+            html.Button('Update Dashboard', id='update-button-mobile', style={**button_style, 'width': '100%'})
+        ], style={'margin': '20px', 'textAlign': 'center'}),
+
+        # Mobile Temperature Settings
+        html.Div([
+            html.H4('Temperature Settings', style={
+                'margin': '0 0 15px 0',
+                'color': '#4a4a4a',
+                'fontSize': '16px',
+                'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                'textAlign': 'center'
+            }),
+            html.Div([
+                html.Div([
+                    html.Label('Smoker Target (°C)', style=label_style),
+                    dcc.Input(id='smoker_target_temp_mobile', type='number', min=0, max=200, step=1, value=107, style={**input_style, 'width': '100%'})
+                ], style={'marginBottom': '15px'}),
+                html.Div([
+                    html.Label('Meat Minimum (°C)', style=label_style),
+                    dcc.Input(id='meat_min_temp_mobile', type='number', min=0, max=200, step=1, value=74, style={**input_style, 'width': '100%'})
+                ])
+            ])
+        ], style={**card_style, 'margin': '20px'}),
+
+        # Mobile Analysis Settings
+        html.Div([
+            html.H4('Analysis Settings', style={
+                'margin': '0 0 15px 0',
+                'color': '#4a4a4a',
+                'fontSize': '16px',
+                'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                'textAlign': 'center'
+            }),
+            html.Div([
+                html.Div([
+                    html.Label('History Window (min)', style=label_style),
+                    dcc.Input(id='past_minutes_mobile', type='number', min=0, max=120, step=10, value=30, style={**input_style, 'width': '100%'})
+                ], style={'marginBottom': '15px'}),
+                html.Div([
+                    html.Label('Forecast (min)', style=label_style),
+                    dcc.Input(id='forecast_minutes_mobile', type='number', min=0, max=120, step=10, value=30, style={**input_style, 'width': '100%'})
+                ], style={'marginBottom': '15px'}),
+                html.Div([
+                    html.Label('Smoothing Window', style=label_style),
+                    dcc.Input(id='rolling_avg_window_mobile', type='number', min=1, max=1000, step=1, value=9, style={**input_style, 'width': '100%'})
+                ])
+            ])
+        ], style={**card_style, 'margin': '20px'})
+
+    ], id='mobile-controls', style={'display': 'none'}),
+
+    # CSS for responsive design
+    html.Style(children="""
+        @media (max-width: 768px) {
+            #sidebar { display: none !important; }
+            #main-content { margin-left: 0 !important; }
+            #mobile-controls { display: block !important; }
         }
-    )
-]
+        
+        input:focus {
+            border-color: #ff6b35 !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        button:hover {
+            background-color: #e55a2b !important;
+        }
+    """)
+], style={
+    'backgroundColor': '#fafafa',
+    'minHeight': '100vh',
+    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+})
 
 @callback(
-    Output('graph-content', 'figure'),
-    Input('update-button', 'n_clicks'),
-    Input("smoker_target_temp", "value"),
-    Input("meat_min_temp", "value"),
-    Input("past_minutes", "value"),
-    Input("forecast_minutes", "value"),
-    Input("rolling_avg_window", "value")
+    [Output('graph-content', 'figure'),
+     Output('current-smoker-temp', 'children'),
+     Output('current-meat-temp', 'children'),
+     Output('current-smoker-temp-mobile', 'children'),
+     Output('current-meat-temp-mobile', 'children')],
+    [Input('update-button', 'n_clicks'),
+     Input('update-button-mobile', 'n_clicks'),
+     Input("smoker_target_temp", "value"),
+     Input("meat_min_temp", "value"),
+     Input("past_minutes", "value"),
+     Input("forecast_minutes", "value"),
+     Input("rolling_avg_window", "value"),
+     Input("smoker_target_temp_mobile", "value"),
+     Input("meat_min_temp_mobile", "value"),
+     Input("past_minutes_mobile", "value"),
+     Input("forecast_minutes_mobile", "value"),
+     Input("rolling_avg_window_mobile", "value")]
 )
-def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window):
+def update_graph(n_clicks_desktop, n_clicks_mobile, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window,
+                smoker_target_temp_mobile, meat_min_temp_mobile, past_minutes_mobile, forecast_minutes_mobile, rolling_avg_window_mobile):
+    
+    # Use mobile values as fallback, desktop as primary
+    smoker_target = smoker_target_temp if smoker_target_temp is not None else smoker_target_temp_mobile
+    meat_min = meat_min_temp if meat_min_temp is not None else meat_min_temp_mobile
+    past_min = past_minutes if past_minutes is not None else past_minutes_mobile
+    forecast_min = forecast_minutes if forecast_minutes is not None else forecast_minutes_mobile
+    rolling_window = rolling_avg_window if rolling_avg_window is not None else rolling_avg_window_mobile
     # Parse temperature data
     df = parse_temperature_data()
-    df['datetime'] = pd.to_datetime(df['datetime'], format='mixed').dt.strftime('%H:%M:%S')
-    df['datetime'] = pd.to_datetime(df['datetime'], format='%H:%M:%S')
+    df['datetime'] = pd.to_datetime(pd.to_datetime(df['datetime'], format='mixed').dt.strftime('%H:%M:%S'), format='%H:%M:%S')
 
     df = df.drop_duplicates(subset=['datetime'], keep='first') # Remove duplicate rows based on similar datetime, keeping first occurrence
-    df['smoker_temp'] = df['smoker_temp'].rolling(window=rolling_avg_window).mean()
-    df['meat_temp'] = df['meat_temp'].rolling(window=rolling_avg_window).mean()
+    df['smoker_temp'] = df['smoker_temp'].rolling(window=rolling_window).mean()
+    df['meat_temp'] = df['meat_temp'].rolling(window=rolling_window).mean()
     df.dropna(how='any', inplace=True)
 
+    # Get current temperatures for display
+    current_smoker = f"{df['smoker_temp'].iloc[-1]:.1f}°C" if not df.empty else "--°C"
+    current_meat = f"{df['meat_temp'].iloc[-1]:.1f}°C" if not df.empty else "--°C"
 
-    past_steps = past_minutes * 60
-    forecast_steps = forecast_minutes * 60
+    past_steps = past_min * 60
+    forecast_steps = forecast_min * 60
 
     # # Display only last 10 minutes
     # date_time = df['datetime'].tail(past_steps).to_list()
@@ -147,31 +376,43 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
     smoker_forecast, smoker_upper_bound, smoker_lower_bound = forecast_temperature(df['smoker_temp'], X, past_steps, future_times)
     meat_forecast, meat_upper_bound, meat_lower_bound = forecast_temperature(df['meat_temp'], X, past_steps, future_times)
 
+    # BBQ-themed color palette
+    smoker_color = '#d2691e'  # Chocolate/orange for smoker
+    smoker_light = '#daa520'  # Goldenrod for smoker highlights
+    smoker_forecast_color = '#ff8c00'  # Dark orange for smoker forecast
+    
+    meat_color = '#8b4513'  # Saddle brown for meat
+    meat_light = '#a0522d'  # Sienna for meat highlights  
+    meat_forecast_color = '#cd853f'  # Peru for meat forecast
+
     fig = go.Figure()
 
-    # Past temperature values
-    fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', line=dict(color='blue'), 
-                   name='Full history', legendgroup='smoker', legendgrouptitle_text="Smoker")
-    fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', line=dict(color='red'), 
-                   name='Full history', legendgroup='meat', legendgrouptitle_text="Meat")
+    # Past temperature values with BBQ-themed colors
+    fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', 
+                   line=dict(color=smoker_color, width=2), 
+                   name='Full history', legendgroup='smoker', legendgrouptitle_text="🔥 Smoker")
+    fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', 
+                   line=dict(color=meat_color, width=2), 
+                   name='Full history', legendgroup='meat', legendgrouptitle_text="🥩 Meat")
 
     fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["smoker_temp"].tail(past_steps), mode='lines', 
-                   line=dict(color='magenta'), name='Rolling window', legendgroup='smoker')
+                   line=dict(color=smoker_light, width=3), name='Analysis window', legendgroup='smoker')
     fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["meat_temp"].tail(past_steps), mode='lines', 
-                   line=dict(color='purple'), name='Rolling window', legendgroup='meat')
+                   line=dict(color=meat_light, width=3), name='Analysis window', legendgroup='meat')
 
     # Target temperature values
-    fig.add_hline(y=smoker_target_temp, line_width=1, line_color="blue", line_dash="dash")
-    fig.add_hline(y=meat_min_temp, line_width=1, line_color="red", line_dash="dash")
+    fig.add_hline(y=smoker_target, line_width=2, line_color=smoker_color, line_dash="dash",
+                 annotation_text=f"Target: {smoker_target}°C")
+    fig.add_hline(y=meat_min, line_width=2, line_color=meat_color, line_dash="dash",
+                 annotation_text=f"Min: {meat_min}°C")
 
-    # Predicted temperature values with confidence intervals
-    # Smoker Temperature
-    fig.add_scatter(x=future_time_strings, y=smoker_forecast, mode='lines', line=dict(color='cyan'), 
-                   name='Prediction values', legendgroup='smoker')
-
-    # Meat Temperature
-    fig.add_scatter(x=future_time_strings, y=meat_forecast, mode='lines', line=dict(color='pink'), 
-                   name='Prediction values', legendgroup='meat')
+    # Predicted temperature values
+    fig.add_scatter(x=future_time_strings, y=smoker_forecast, mode='lines', 
+                   line=dict(color=smoker_forecast_color, width=2, dash='dot'), 
+                   name='Forecast', legendgroup='smoker')
+    fig.add_scatter(x=future_time_strings, y=meat_forecast, mode='lines', 
+                   line=dict(color=meat_forecast_color, width=2, dash='dot'), 
+                   name='Forecast', legendgroup='meat')
     #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
     #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(255, 105, 180, 0.3)', line=dict(width=0), showlegend=False)
 
@@ -183,38 +424,46 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
     # plt.fill_between(future_times.flatten(), lower_bound, upper_bound, color='gray', alpha=0.5, label='Confidence Interval')
 
 
-    # Update layout labels
+    # Update layout with modern styling
     fig.update_layout(
-#        width=1280,  # Set the width of the figure
-#        height=720,  # Set the height of the figure
+        paper_bgcolor='white',
+        plot_bgcolor='#fafafa',
         xaxis_title='Time',
-        yaxis_title='Temperature',
+        yaxis_title='Temperature (°C)',
         xaxis=dict(
-            tickangle=270  # Rotate x-axis labels by 180 degrees
+            tickangle=270,
+            gridcolor='#e0e0e0',
+            gridwidth=1,
+            showgrid=True
         ),
-#        yaxis=dict(
-#            tickmode='linear',  # Set tick mode to linear
-#            tick0=0,            # Starting tick (0 for integers starting from 0)
-#            dtick=1,            # Interval of 1 for every integer
-#            nticks=20           # Increase the number of gridlines on the y-axis
-#        ),
+        yaxis=dict(
+            gridcolor='#e0e0e0',
+            gridwidth=1,
+            showgrid=True
+        ),
         legend=dict(
-            x=0.02,  # x-coordinate of the legend (0.02 is slightly from left edge)
-            y=0.02,  # y-coordinate of the legend (0.02 is slightly from bottom)
-            xanchor='left',  # anchor legend to the left
-            yanchor='bottom',  # anchor legend to the bottom
-            bgcolor='rgba(255, 255, 255, 0.8)',  # Semi-transparent background
-            bordercolor='rgba(0, 0, 0, 0.2)',  # Light border
+            x=0.02,
+            y=0.98,
+            xanchor='left',
+            yanchor='top',
+            bgcolor='rgba(255, 255, 255, 0.9)',
+            bordercolor='rgba(0, 0, 0, 0.1)',
             borderwidth=1,
-            orientation='v',  # vertical orientation for better column control
-            tracegroupgap=10,  # gap between trace groups
-            itemsizing='constant',  # consistent item sizing
-            itemwidth=30,  # width of legend items
-            font=dict(size=10)  # font size for legend text
-        )
+            orientation='v',
+            tracegroupgap=15,
+            itemsizing='constant',
+            itemwidth=30,
+            font=dict(size=11, family='Monaco, "Lucida Console", "Courier New", Courier, monospace')
+        ),
+        font=dict(
+            family='Monaco, "Lucida Console", "Courier New", Courier, monospace',
+            size=12,
+            color='#4a4a4a'
+        ),
+        margin=dict(l=60, r=40, t=40, b=60)
     )
 
-    return fig
+    return fig, current_smoker, current_meat, current_smoker, current_meat
 
 
 if __name__ == '__main__':
