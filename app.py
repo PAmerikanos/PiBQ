@@ -106,7 +106,8 @@ app.layout = html.Div([
                     'margin': '0 0 15px 0',
                     'color': '#4a4a4a',
                     'fontSize': '18px',
-                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                    'textAlign': 'center'
                 }),
                 html.Div([
                     html.Div([
@@ -118,7 +119,7 @@ app.layout = html.Div([
                             'color': '#d2691e',
                             'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
                         })
-                    ], style={'marginBottom': '10px'}),
+                    ], style={'marginBottom': '10px', 'textAlign': 'center'}),
                     html.Div([
                         html.Span('🥩', style={'fontSize': '24px', 'marginRight': '8px'}),
                         html.Span('Meat:', style={'fontSize': '14px', 'color': '#666'}),
@@ -128,7 +129,7 @@ app.layout = html.Div([
                             'color': '#8b4513',
                             'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
                         })
-                    ])
+                    ], style={'textAlign': 'center'})
                 ])
             ], style=card_style),
 
@@ -139,7 +140,7 @@ app.layout = html.Div([
 
             # Temperature Settings
             html.Div([
-                html.H4('Temperature Settings', style={
+                html.H4('Target Temps', style={
                     'margin': '0 0 15px 0',
                     'color': '#4a4a4a',
                     'fontSize': '16px',
@@ -147,18 +148,18 @@ app.layout = html.Div([
                     'textAlign': 'center'
                 }),
                 html.Div([
-                    html.Label('Smoker Target °C', style=label_style),
+                    html.Label('Smoker Target (°C)', style=label_style),
                     dcc.Input(id='smoker_target_temp', type='number', min=0, max=200, step=1, value=107, style=input_style)
                 ], style={'marginBottom': '15px', 'textAlign': 'center'}),
                 html.Div([
-                    html.Label('Meat Minimum °C', style=label_style),
+                    html.Label('Meat Minimum (°C)', style=label_style),
                     dcc.Input(id='meat_min_temp', type='number', min=0, max=200, step=1, value=74, style=input_style)
                 ], style={'textAlign': 'center'})
             ], style=card_style),
 
             # Analysis Settings
             html.Div([
-                html.H4('Analysis Settings', style={
+                html.H4('Forecast Temps', style={
                     'margin': '0 0 15px 0',
                     'color': '#4a4a4a',
                     'fontSize': '16px',
@@ -166,15 +167,15 @@ app.layout = html.Div([
                     'textAlign': 'center'
                 }),
                 html.Div([
-                    html.Label('History Window min', style=label_style),
+                    html.Label('History Window (min)', style=label_style),
                     dcc.Input(id='past_minutes', type='number', min=0, max=120, step=10, value=30, style=input_style)
                 ], style={'marginBottom': '15px', 'textAlign': 'center'}),
                 html.Div([
-                    html.Label('Forecast min', style=label_style),
+                    html.Label('Forecast (min)', style=label_style),
                     dcc.Input(id='forecast_minutes', type='number', min=0, max=120, step=10, value=30, style=input_style)
                 ], style={'marginBottom': '15px', 'textAlign': 'center'}),
                 html.Div([
-                    html.Label('Smoothing Window', style=label_style),
+                    html.Label('Smoothing Window (samples)', style=label_style),
                     dcc.Input(id='rolling_avg_window', type='number', min=1, max=1000, step=1, value=9, style=input_style)
                 ], style={'textAlign': 'center'})
             ], style=card_style)
@@ -496,4 +497,4 @@ def update_graph(n_clicks_desktop, n_clicks_mobile, smoker_target_temp, meat_min
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=8000, debug=False, threaded=True)
