@@ -11,8 +11,6 @@ Group=pi
 WorkingDirectory=/home/pi/PiBQ
 Environment=PATH=/home/pi/PiBQ/pibq/bin:/usr/local/bin:/usr/bin:/bin
 ExecStart=/home/pi/PiBQ/pibq/bin/python3 app.py
-AmbientCapabilities=CAP_NET_BIND_SERVICE
-CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 Restart=always
 RestartSec=5
 StandardOutput=journal

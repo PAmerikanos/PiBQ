@@ -44,7 +44,7 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
 ## Operation
 1. Turn RPi on and connect it to the Internet. Automatic WiFi connection is set to `Pefki` SSID. The temperature recording and Flask server will initiate upon boot.
 2. Locate RPi IP using the WiFi router's network manager.
-3. On client device open browser at `http://192.168.XXX.XXX` (port 80, no need to specify) as found above.
+3. On client device open browser at `http://192.168.XXX.XXX:8000` as found above.
 
 ## Troubleshooting
 From computer within the LAN connect to RPi using SSH: `ssh pi@192.168.XXX.XXX` / `pass: 0000`.

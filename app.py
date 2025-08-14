@@ -20,26 +20,16 @@ app.layout = [
             }
         ),
         html.H1(
-            'PiBQ - Meat Monitoring for Carnivores 🔥🥩',
+            'PiBQ',
             style={
                 'display': 'inline-block',
                 'verticalAlign': 'middle',
                 'margin': '0',
                 'color': '#666666',
-                'fontFamily': 'Comic Sans MS, cursive, Arial, sans-serif',
-                'fontSize': '28px',
+                'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                'fontSize': '30px',
                 'fontWeight': 'bold',
                 'textShadow': '1px 1px 2px #cccccc'
-            }
-        ),
-        html.Div(
-            '"Where Thermodynamics Meets Deliciousness" 🌡️🤤',
-            style={
-                'color': '#888888',
-                'fontFamily': 'Comic Sans MS, cursive, Arial, sans-serif',
-                'fontSize': '14px',
-                'fontStyle': 'italic',
-                'marginTop': '5px'
             }
         )
     ], style={
@@ -216,4 +206,4 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=8000, debug=True, threaded=True)
