@@ -136,11 +136,11 @@ app.layout = html.Div([
             html.Div([
                 html.Div([
                     html.Label('Smoker Target (°C)', className='input-label'),
-                    dcc.Input(id='smoker_target_temp_mobile', type='number', min=0, max=200, step=1, value=107, className='input-field input-field-mobile')
+                    dcc.Input(id='smoker_target_temp_mobile', type='number', min=0, max=500, step=1, value=120, className='input-field input-field-mobile')
                 ], className='input-group-mobile'),
                 html.Div([
                     html.Label('Meat Minimum (°C)', className='input-label'),
-                    dcc.Input(id='meat_min_temp_mobile', type='number', min=0, max=200, step=1, value=74, className='input-field input-field-mobile')
+                    dcc.Input(id='meat_min_temp_mobile', type='number', min=0, max=500, step=1, value=74, className='input-field input-field-mobile')
                 ])
             ])
         ], className='card mobile-card'),
@@ -151,11 +151,11 @@ app.layout = html.Div([
             html.Div([
                 html.Div([
                     html.Label('History Window (min)', className='input-label'),
-                    dcc.Input(id='past_minutes_mobile', type='number', min=0, max=120, step=10, value=30, className='input-field input-field-mobile')
+                    dcc.Input(id='past_minutes_mobile', type='number', min=0, max=120, step=10, value=10, className='input-field input-field-mobile')
                 ], className='input-group-mobile'),
                 html.Div([
                     html.Label('Forecast (min)', className='input-label'),
-                    dcc.Input(id='forecast_minutes_mobile', type='number', min=0, max=120, step=10, value=30, className='input-field input-field-mobile')
+                    dcc.Input(id='forecast_minutes_mobile', type='number', min=0, max=120, step=10, value=10, className='input-field input-field-mobile')
                 ], className='input-group-mobile'),
                 html.Div([
                     html.Label('Smoothing Window', className='input-label'),
@@ -206,8 +206,8 @@ def update_graph(n_clicks_desktop, n_clicks_mobile, n_intervals, smoker_target_t
     rolling_window = rolling_avg_window if rolling_avg_window is not None else rolling_avg_window_mobile
     # Parse temperature data
     df = parse_temperature_data()
-    df['datetime'] = pd.to_datetime(df['datetime'], unit='s')
-    print(df['datetime'])
+    df['datetime'] = pd.to_datetime(df['datetime'], unit='s', utc=True).dt.tz_convert('Europe/Athens')
+
     df = df.drop_duplicates(subset=['datetime'], keep='first') # Remove duplicate rows based on similar datetime, keeping first occurrence
     df['smoker_temp'] = df['smoker_temp'].rolling(window=rolling_window).mean()
     df['meat_temp'] = df['meat_temp'].rolling(window=rolling_window).mean()
@@ -243,7 +243,7 @@ def update_graph(n_clicks_desktop, n_clicks_mobile, n_intervals, smoker_target_t
     int_list = range(int(last_value) + 1, int(last_value) + forecast_steps)
     future_times = np.array([float(i) for i in int_list]).reshape(-1, 1)
     future_time_strings = convert_to_time(future_times, full_time_min)
-    # print(future_time_strings)
+
     smoker_forecast, smoker_upper_bound, smoker_lower_bound = forecast_temperature(df['smoker_temp'], X, past_steps, future_times)
     meat_forecast, meat_upper_bound, meat_lower_bound = forecast_temperature(df['meat_temp'], X, past_steps, future_times)
 
