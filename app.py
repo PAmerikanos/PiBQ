@@ -5,57 +5,11 @@ import pandas as pd
 from helpers import convert_to_time, forecast_temperature, parse_temperature_data
 
 
-app = Dash(assets_folder='assets', external_stylesheets=['/assets/styles.css'])
+app = Dash(__name__, assets_folder='assets', external_stylesheets=['/assets/styles.css'])
 app.title = 'PiBQ - BBQ monitoring dashboard'
 
-# Common styles
-input_style = {
-    'width': '120px',
-    'padding': '12px',
-    'borderRadius': '8px',
-    'border': '2px solid #e0e0e0',
-    'fontSize': '16px',
-    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-    'transition': 'border-color 0.3s ease',
-    'boxSizing': 'border-box',
-    'className': 'input-style',
-    'textAlign': 'center',
-    'margin': '0 auto'
-}
-
-label_style = {
-    'marginBottom': '8px',
-    'color': '#555',
-    'fontWeight': '600',
-    'fontSize': '14px',
-    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-    'textAlign': 'center',
-    'display': 'block'
-}
-
-button_style = {
-    'padding': '14px 28px',
-    'backgroundColor': '#ff6b35',
-    'color': 'white',
-    'border': 'none',
-    'borderRadius': '8px',
-    'fontSize': '16px',
-    'fontWeight': '600',
-    'cursor': 'pointer',
-    'transition': 'background-color 0.3s ease',
-    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-    'boxShadow': '0 2px 4px rgba(0,0,0,0.1)'
-}
-
-card_style = {
-    'backgroundColor': '#ffffff',
-    'padding': '20px',
-    'borderRadius': '12px',
-    'boxShadow': '0 2px 8px rgba(0,0,0,0.1)',
-    'marginBottom': '20px',
-    'border': '1px solid #f0f0f0',
-    'className': 'card-style'
-}
+# Add custom favicon
+app._favicon = 'favicon.png'
 
 app.layout = html.Div([
     # Main container with sidebar layout
@@ -66,132 +20,71 @@ app.layout = html.Div([
             html.Div([
                 html.Img(
                     src='/assets/logo.png',
-                    style={
-                        'height': '30px',
-                        'marginRight': '15px',
-                        'verticalAlign': 'middle'
-                    }
+                    className='logo'
                 ),
                 html.H1(
                     'PiBQ',
-                    style={
-                        'display': 'inline-block',
-                        'verticalAlign': 'middle',
-                        'margin': '0',
-                        'color': '#4a4a4a',
-                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                        'fontSize': '24px',
-                        'fontWeight': 'bold'
-                    }
+                    className='title'
                 ),
                 html.P(
                     'BBQ monitoring dashboard',
-                    style={
-                        'margin': '5px 0 0 0',
-                        'color': '#777',
-                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                        'fontSize': '12px',
-                        'fontStyle': 'italic'
-                    }
+                    className='subtitle'
                 )
-            ], style={
-                'textAlign': 'center',
-                'padding': '20px 10px',
-                'marginBottom': '20px'
-            }),
+            ], className='header'),
 
             # Current Temperature Display
             html.Div([
-                html.H3('Current Temperatures', style={
-                    'margin': '0 0 15px 0',
-                    'color': '#4a4a4a',
-                    'fontSize': '18px',
-                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                    'textAlign': 'center'
-                }),
+                html.H3('Current Temps', className='section-header section-header-small'),
                 html.Div([
                     html.Div([
-                        html.Span('🔥', style={'fontSize': '24px', 'marginRight': '8px'}),
-                        html.Span('Smoker:', style={'fontSize': '14px', 'color': '#666'}),
-                        html.Div(id='current-smoker-temp', children='--°C', style={
-                            'fontSize': '24px',
-                            'fontWeight': 'bold',
-                            'color': '#d2691e',
-                            'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
-                        })
-                    ], style={'marginBottom': '10px', 'textAlign': 'center'}),
+                        html.Span('🔥', className='temp-icon'),
+                        html.Span('Smoker:', className='temp-label'),
+                        html.Div(id='current-smoker-temp', children='--°C', className='temp-value smoker-temp')
+                    ], className='temp-display'),
                     html.Div([
-                        html.Span('🥩', style={'fontSize': '24px', 'marginRight': '8px'}),
-                        html.Span('Meat:', style={'fontSize': '14px', 'color': '#666'}),
-                        html.Div(id='current-meat-temp', children='--°C', style={
-                            'fontSize': '24px',
-                            'fontWeight': 'bold',
-                            'color': '#8b4513',
-                            'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
-                        })
-                    ], style={'textAlign': 'center'})
+                        html.Span('🥩', className='temp-icon'),
+                        html.Span('Meat:', className='temp-label'),
+                        html.Div(id='current-meat-temp', children='--°C', className='temp-value meat-temp')
+                    ], className='temp-display')
                 ])
-            ], style=card_style),
+            ], className='card'),
 
             # Update Button
             html.Div([
-                html.Button('Update Dashboard', id='update-button', style=button_style)
-            ], style={'textAlign': 'center', 'marginBottom': '20px'}),
+                html.Button('Update Dashboard', id='update-button', className='button')
+            ], className='button-container'),
 
             # Temperature Settings
             html.Div([
-                html.H4('Target Temps', style={
-                    'margin': '0 0 15px 0',
-                    'color': '#4a4a4a',
-                    'fontSize': '16px',
-                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                    'textAlign': 'center'
-                }),
+                html.H3('Target Temps', className='section-header section-header-small'),
                 html.Div([
-                    html.Label('Smoker Target (°C)', style=label_style),
-                    dcc.Input(id='smoker_target_temp', type='number', min=0, max=200, step=1, value=107, style=input_style)
-                ], style={'marginBottom': '15px', 'textAlign': 'center'}),
+                    html.Label('Smoker Target (°C)', className='input-label'),
+                    dcc.Input(id='smoker_target_temp', type='number', min=0, max=200, step=1, value=107, className='input-field')
+                ], className='input-group'),
                 html.Div([
-                    html.Label('Meat Minimum (°C)', style=label_style),
-                    dcc.Input(id='meat_min_temp', type='number', min=0, max=200, step=1, value=74, style=input_style)
-                ], style={'textAlign': 'center'})
-            ], style=card_style),
+                    html.Label('Meat Minimum (°C)', className='input-label'),
+                    dcc.Input(id='meat_min_temp', type='number', min=0, max=200, step=1, value=74, className='input-field')
+                ], className='input-group')
+            ], className='card'),
 
             # Analysis Settings
             html.Div([
-                html.H4('Forecast Temps', style={
-                    'margin': '0 0 15px 0',
-                    'color': '#4a4a4a',
-                    'fontSize': '16px',
-                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                    'textAlign': 'center'
-                }),
+                html.H3('Forecast Temps', className='section-header section-header-small'),
                 html.Div([
-                    html.Label('History Window (min)', style=label_style),
-                    dcc.Input(id='past_minutes', type='number', min=0, max=120, step=10, value=30, style=input_style)
-                ], style={'marginBottom': '15px', 'textAlign': 'center'}),
+                    html.Label('History Window (min)', className='input-label'),
+                    dcc.Input(id='past_minutes', type='number', min=0, max=120, step=10, value=30, className='input-field')
+                ], className='input-group'),
                 html.Div([
-                    html.Label('Forecast (min)', style=label_style),
-                    dcc.Input(id='forecast_minutes', type='number', min=0, max=120, step=10, value=30, style=input_style)
-                ], style={'marginBottom': '15px', 'textAlign': 'center'}),
+                    html.Label('Forecast (min)', className='input-label'),
+                    dcc.Input(id='forecast_minutes', type='number', min=0, max=120, step=10, value=30, className='input-field')
+                ], className='input-group'),
                 html.Div([
-                    html.Label('Smoothing Window (samples)', style=label_style),
-                    dcc.Input(id='rolling_avg_window', type='number', min=1, max=1000, step=1, value=9, style=input_style)
-                ], style={'textAlign': 'center'})
-            ], style=card_style)
+                    html.Label('Smoothing Window (samples)', className='input-label'),
+                    dcc.Input(id='rolling_avg_window', type='number', min=1, max=1000, step=1, value=9, className='input-field')
+                ], className='input-group')
+            ], className='card')
 
-        ], id='sidebar', style={
-            'width': '300px',
-            'padding': '20px',
-            'backgroundColor': '#f8f8f8',
-            'height': '100vh',
-            'position': 'fixed',
-            'left': '0',
-            'top': '0',
-            'overflowY': 'auto',
-            'borderRight': '1px solid #e0e0e0',
-            'zIndex': '1000'
-        }),
+        ], className='sidebar'),
 
         # Main content area
         html.Div([
@@ -199,141 +92,81 @@ app.layout = html.Div([
             html.Div([
                 html.Img(
                     src='/assets/logo.png',
-                    style={
-                        'height': '30px',
-                        'marginRight': '15px',
-                        'verticalAlign': 'middle'
-                    }
+                    className='logo'
                 ),
                 html.H1(
                     'PiBQ',
-                    style={
-                        'display': 'inline-block',
-                        'verticalAlign': 'middle',
-                        'margin': '0',
-                        'color': '#4a4a4a',
-                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                        'fontSize': '30px',
-                        'fontWeight': 'bold'
-                    }
+                    className='title mobile-title'
                 ),
                 html.P(
                     'BBQ monitoring dashboard',
-                    style={
-                        'margin': '5px 0 0 0',
-                        'color': '#777',
-                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                        'fontSize': '14px',
-                        'fontStyle': 'italic'
-                    }
+                    className='subtitle mobile-subtitle'
                 )
-            ], id='mobile-header', style={
-                'textAlign': 'center',
-                'padding': '20px',
-                'backgroundColor': '#fafafa',
-                'borderBottom': '1px solid #e0e0e0',
-                'marginBottom': '0',
-                'display': 'none'  # Hidden on desktop
-            }),
+            ], className='mobile-header'),
             
-            dcc.Graph(id='graph-content', style={'height': '100vh'})
-        ], style={
-            'marginLeft': '340px',
-            'backgroundColor': '#ffffff'
-        }, id='main-content')
+            dcc.Graph(id='graph-content', className='graph-container')
+        ], className='main-content')
 
-    ], style={'position': 'relative'}),
+    ], className='main-container'),
 
     # Mobile controls (hidden on desktop)
     html.Div([
         # Current Temperature Display for Mobile
         html.Div([
-            html.H3('Current Temperatures', style={
-                'margin': '0 0 15px 0',
-                'color': '#4a4a4a',
-                'fontSize': '18px',
-                'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                'textAlign': 'center'
-            }),
+            html.H3('Current Temperatures', className='section-header mobile-section-header'),
             html.Div([
                 html.Div([
-                    html.Span('🔥 Smoker: ', style={'fontSize': '16px', 'color': '#666'}),
-                    html.Span(id='current-smoker-temp-mobile', children='--°C', style={
-                        'fontSize': '20px',
-                        'fontWeight': 'bold',
-                        'color': '#d2691e',
-                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
-                    })
-                ], style={'marginBottom': '8px', 'textAlign': 'center'}),
+                    html.Span('🔥 Smoker: ', className='temp-label-mobile'),
+                    html.Span(id='current-smoker-temp-mobile', children='--°C', className='temp-value-mobile smoker-temp')
+                ], className='temp-display-mobile'),
                 html.Div([
-                    html.Span('🥩 Meat: ', style={'fontSize': '16px', 'color': '#666'}),
-                    html.Span(id='current-meat-temp-mobile', children='--°C', style={
-                        'fontSize': '20px',
-                        'fontWeight': 'bold',
-                        'color': '#8b4513',
-                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
-                    })
-                ], style={'textAlign': 'center'})
+                    html.Span('🥩 Meat: ', className='temp-label-mobile'),
+                    html.Span(id='current-meat-temp-mobile', children='--°C', className='temp-value-mobile meat-temp')
+                ], className='temp-display-mobile')
             ])
-        ], style={**card_style, 'margin': '20px'}),
+        ], className='card mobile-card'),
 
         html.Div([
-            html.Button('Update Dashboard', id='update-button-mobile', style={**button_style, 'width': '100%'})
-        ], style={'margin': '20px', 'textAlign': 'center'}),
+            html.Button('Update Dashboard', id='update-button-mobile', className='button button-mobile')
+        ]),
 
         # Mobile Temperature Settings
         html.Div([
-            html.H4('Temperature Settings', style={
-                'margin': '0 0 15px 0',
-                'color': '#4a4a4a',
-                'fontSize': '16px',
-                'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                'textAlign': 'center'
-            }),
+            html.H4('Temperature Settings', className='section-header mobile-section-header'),
             html.Div([
                 html.Div([
-                    html.Label('Smoker Target (°C)', style=label_style),
-                    dcc.Input(id='smoker_target_temp_mobile', type='number', min=0, max=200, step=1, value=107, style={**input_style, 'width': '100%'})
-                ], style={'marginBottom': '15px'}),
+                    html.Label('Smoker Target (°C)', className='input-label'),
+                    dcc.Input(id='smoker_target_temp_mobile', type='number', min=0, max=200, step=1, value=107, className='input-field input-field-mobile')
+                ], className='input-group-mobile'),
                 html.Div([
-                    html.Label('Meat Minimum (°C)', style=label_style),
-                    dcc.Input(id='meat_min_temp_mobile', type='number', min=0, max=200, step=1, value=74, style={**input_style, 'width': '100%'})
+                    html.Label('Meat Minimum (°C)', className='input-label'),
+                    dcc.Input(id='meat_min_temp_mobile', type='number', min=0, max=200, step=1, value=74, className='input-field input-field-mobile')
                 ])
             ])
-        ], style={**card_style, 'margin': '20px'}),
+        ], className='card mobile-card'),
 
         # Mobile Analysis Settings
         html.Div([
-            html.H4('Analysis Settings', style={
-                'margin': '0 0 15px 0',
-                'color': '#4a4a4a',
-                'fontSize': '16px',
-                'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                'textAlign': 'center'
-            }),
+            html.H4('Analysis Settings', className='section-header mobile-section-header'),
             html.Div([
                 html.Div([
-                    html.Label('History Window (min)', style=label_style),
-                    dcc.Input(id='past_minutes_mobile', type='number', min=0, max=120, step=10, value=30, style={**input_style, 'width': '100%'})
-                ], style={'marginBottom': '15px'}),
+                    html.Label('History Window (min)', className='input-label'),
+                    dcc.Input(id='past_minutes_mobile', type='number', min=0, max=120, step=10, value=30, className='input-field input-field-mobile')
+                ], className='input-group-mobile'),
                 html.Div([
-                    html.Label('Forecast (min)', style=label_style),
-                    dcc.Input(id='forecast_minutes_mobile', type='number', min=0, max=120, step=10, value=30, style={**input_style, 'width': '100%'})
-                ], style={'marginBottom': '15px'}),
+                    html.Label('Forecast (min)', className='input-label'),
+                    dcc.Input(id='forecast_minutes_mobile', type='number', min=0, max=120, step=10, value=30, className='input-field input-field-mobile')
+                ], className='input-group-mobile'),
                 html.Div([
-                    html.Label('Smoothing Window', style=label_style),
-                    dcc.Input(id='rolling_avg_window_mobile', type='number', min=1, max=1000, step=1, value=9, style={**input_style, 'width': '100%'})
+                    html.Label('Smoothing Window', className='input-label'),
+                    dcc.Input(id='rolling_avg_window_mobile', type='number', min=1, max=1000, step=1, value=9, className='input-field input-field-mobile')
                 ])
             ])
-        ], style={**card_style, 'margin': '20px'})
+        ], className='card mobile-card')
 
-    ], id='mobile-controls', style={'display': 'none'})
+    ], className='mobile-controls')
 
-], style={
-    'backgroundColor': '#fafafa',
-    'minHeight': '100vh',
-    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
-})
+])
 
 @callback(
     [Output('graph-content', 'figure'),

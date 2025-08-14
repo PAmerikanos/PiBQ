@@ -1,66 +1,300 @@
+/* Base styles */
+body {
+    background-color: #fafafa;
+    min-height: 100vh;
+    font-family: Monaco, "Lucida Console", "Courier New", Courier, monospace;
+    margin: 0;
+    padding: 0;
+}
+
+/* Main layout containers */
+.main-container {
+    position: relative;
+}
+
+.sidebar {
+    width: 300px;
+    padding: 20px;
+    background-color: #f8f8f8;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    overflow-y: auto;
+    border-right: 1px solid #e0e0e0;
+    z-index: 1000;
+}
+
+.main-content {
+    margin-left: 340px;
+    background-color: #ffffff;
+}
+
+/* Header styles */
+.header {
+    text-align: center;
+    padding: 20px 10px;
+    margin-bottom: 20px;
+}
+
+.logo {
+    height: 30px;
+    margin-right: 15px;
+    vertical-align: middle;
+}
+
+.title {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+    color: #4a4a4a;
+    font-family: Monaco, "Lucida Console", "Courier New", Courier, monospace;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.mobile-title {
+    font-size: 30px;
+}
+
+.subtitle {
+    margin: 5px 0 0 0;
+    color: #777;
+    font-family: Monaco, "Lucida Console", "Courier New", Courier, monospace;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.mobile-subtitle {
+    font-size: 14px;
+}
+
+/* Mobile header */
+.mobile-header {
+    text-align: center;
+    padding: 20px;
+    background-color: #fafafa;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 0;
+    display: none;
+}
+
+/* Card styles */
+.card {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    border: 1px solid #f0f0f0;
+}
+
+.mobile-card {
+    margin: 20px;
+}
+
+/* Section headers */
+.section-header {
+    margin: 0 0 15px 0;
+    color: #ff6b35;
+    font-size: 18px;
+    font-family: Monaco, "Lucida Console", "Courier New", Courier, monospace;
+    text-align: center;
+}
+
+.section-header-small {
+    font-size: 16px;
+}
+
+.mobile-section-header {
+    color: #4a4a4a;
+    font-size: 16px;
+}
+
+/* Temperature display */
+.temp-display {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.temp-display-mobile {
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.temp-icon {
+    font-size: 24px;
+    margin-right: 8px;
+}
+
+.temp-icon-mobile {
+    font-size: 16px;
+}
+
+.temp-label {
+    font-size: 14px;
+    color: #666;
+}
+
+.temp-label-mobile {
+    font-size: 16px;
+    color: #666;
+}
+
+.temp-value {
+    font-size: 24px;
+    font-weight: bold;
+    font-family: Monaco, "Lucida Console", "Courier New", Courier, monospace;
+}
+
+.temp-value-mobile {
+    font-size: 20px;
+    font-weight: bold;
+    font-family: Monaco, "Lucida Console", "Courier New", Courier, monospace;
+}
+
+.smoker-temp {
+    color: #d2691e;
+}
+
+.meat-temp {
+    color: #8b4513;
+}
+
+/* Input styles */
+.input-group {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.input-group-mobile {
+    margin-bottom: 15px;
+}
+
+.input-label {
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 600;
+    font-size: 14px;
+    font-family: Monaco, "Lucida Console", "Courier New", Courier, monospace;
+    text-align: center;
+    display: block;
+}
+
+.input-field {
+    width: 120px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    font-size: 16px;
+    font-family: Monaco, "Lucida Console", "Courier New", Courier, monospace;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.input-field-mobile {
+    width: 100%;
+}
+
+.input-field:focus {
+    border-color: #ff6b35;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+/* Button styles */
+.button {
+    padding: 14px 28px;
+    background-color: #ff6b35;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-family: Monaco, "Lucida Console", "Courier New", Courier, monospace;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.button:hover {
+    background-color: #e55a2b;
+}
+
+.button-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.button-mobile {
+    width: 100%;
+    margin: 20px;
+    text-align: center;
+}
+
+/* Graph container */
+.graph-container {
+    height: 100vh;
+}
+
+/* Mobile controls */
+.mobile-controls {
+    display: none;
+}
+
 /* Mobile responsive styles */
 @media (max-width: 768px) {
-    #sidebar { 
+    .sidebar { 
         display: none !important; 
     }
     
-    #main-content { 
+    .main-content { 
         margin-left: 0 !important; 
     }
     
-    #mobile-controls { 
+    .mobile-controls { 
         display: block !important; 
     }
     
-    #mobile-header {
+    .mobile-header {
         display: block !important;
     }
 }
 
 /* Desktop styles */
 @media (min-width: 769px) {
-    #mobile-controls { 
+    .mobile-controls { 
         display: none !important; 
     }
     
-    #mobile-header {
+    .mobile-header {
         display: none !important;
     }
 }
 
-/* Input focus styles */
-.input-style:focus {
-    border-color: #ff6b35 !important;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
-}
-
-/* Button hover styles */
-button:hover {
-    background-color: #e55a2b !important;
-}
-
 /* Scrollbar styling for webkit browsers */
-#sidebar::-webkit-scrollbar {
+.sidebar::-webkit-scrollbar {
     width: 8px;
 }
 
-#sidebar::-webkit-scrollbar-track {
+.sidebar::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 4px;
 }
 
-#sidebar::-webkit-scrollbar-thumb {
+.sidebar::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 4px;
 }
 
-#sidebar::-webkit-scrollbar-thumb:hover {
+.sidebar::-webkit-scrollbar-thumb:hover {
     background: #999;
 }
 
 /* Ensure sidebar is properly scrollable */
-#sidebar {
+.sidebar {
     scrollbar-width: thin;
     scrollbar-color: #ccc #f1f1f1;
 }
