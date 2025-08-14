@@ -109,7 +109,7 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
     # Parse temperature data
     df = parse_temperature_data()
     df['datetime'] = pd.to_datetime(df['datetime'], format='mixed').dt.strftime('%H:%M:%S')
-    df['datetime'] = d.to_datetime(df['datetime'], format='%H:%M:%S')
+    df['datetime'] = pd.to_datetime(df['datetime'], format='%H:%M:%S')
 
     df = df.drop_duplicates(subset=['datetime'], keep='first') # Remove duplicate rows based on similar datetime, keeping first occurrence
     df['smoker_temp'] = df['smoker_temp'].rolling(window=rolling_avg_window).mean()
