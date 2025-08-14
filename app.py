@@ -149,11 +149,15 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
     fig = go.Figure()
 
     # Past temperature values
-    fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', line=dict(color='blue'), name='Target Smoker Temp')
-    fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', line=dict(color='red'), name='Minimum Meat Temp')
+    fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', line=dict(color='blue'), 
+                   name='Full history', legendgroup='smoker', legendgrouptitle_text="Smoker")
+    fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', line=dict(color='red'), 
+                   name='Full history', legendgroup='meat', legendgrouptitle_text="Meat")
 
-    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["smoker_temp"].tail(past_steps), mode='lines', line=dict(color='magenta'), name='Actual Smoker Temp')
-    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["meat_temp"].tail(past_steps), mode='lines', line=dict(color='purple'), name='Actual Meat Temp')
+    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["smoker_temp"].tail(past_steps), mode='lines', 
+                   line=dict(color='magenta'), name='Rolling window', legendgroup='smoker')
+    fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["meat_temp"].tail(past_steps), mode='lines', 
+                   line=dict(color='purple'), name='Rolling window', legendgroup='meat')
 
     # Target temperature values
     fig.add_hline(y=smoker_target_temp, line_width=1, line_color="blue", line_dash="dash")
@@ -161,12 +165,12 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
 
     # Predicted temperature values with confidence intervals
     # Smoker Temperature
-    fig.add_scatter(x=future_time_strings, y=smoker_forecast, mode='lines', line=dict(color='cyan'), name='Predicted Smoker Temp')
-    #fig.add_scatter(x=future_time_strings, y=smoker_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
-    #fig.add_scatter(x=future_time_strings, y=smoker_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(0, 255, 255, 0.3)', line=dict(width=0), showlegend=False)
+    fig.add_scatter(x=future_time_strings, y=smoker_forecast, mode='lines', line=dict(color='cyan'), 
+                   name='Prediction values', legendgroup='smoker')
 
     # Meat Temperature
-    fig.add_scatter(x=future_time_strings, y=meat_forecast, mode='lines', line=dict(color='pink'), name='Predicted Meat Temp')
+    fig.add_scatter(x=future_time_strings, y=meat_forecast, mode='lines', line=dict(color='pink'), 
+                   name='Prediction values', legendgroup='meat')
     #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
     #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(255, 105, 180, 0.3)', line=dict(width=0), showlegend=False)
 
@@ -194,11 +198,18 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
 #            nticks=20           # Increase the number of gridlines on the y-axis
 #        ),
         legend=dict(
-            x=0,  # x-coordinate of the legend (0 is far left)
-            y=0,  # y-coordinate of the legend (0 is bottom)
+            x=0.02,  # x-coordinate of the legend (0.02 is slightly from left edge)
+            y=0.02,  # y-coordinate of the legend (0.02 is slightly from bottom)
             xanchor='left',  # anchor legend to the left
             yanchor='bottom',  # anchor legend to the bottom
-            bgcolor='rgba(255, 255, 255, 0.5)'  # Optional: semi-transparent background
+            bgcolor='rgba(255, 255, 255, 0.8)',  # Semi-transparent background
+            bordercolor='rgba(0, 0, 0, 0.2)',  # Light border
+            borderwidth=1,
+            orientation='v',  # vertical orientation for better column control
+            tracegroupgap=10,  # gap between trace groups
+            itemsizing='constant',  # consistent item sizing
+            itemwidth=30,  # width of legend items
+            font=dict(size=10)  # font size for legend text
         )
     )
 
