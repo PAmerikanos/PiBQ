@@ -164,7 +164,14 @@ app.layout = html.Div([
             ])
         ], className='card mobile-card')
 
-    ], className='mobile-controls')
+    ], className='mobile-controls'),
+
+    # Hidden timer for auto-refresh every 60 seconds
+    dcc.Interval(
+        id='interval-component',
+        interval=60*1000,  # in milliseconds (60 seconds)
+        n_intervals=0
+    )
 
 ])
 
@@ -176,6 +183,7 @@ app.layout = html.Div([
      Output('current-meat-temp-mobile', 'children')],
     [Input('update-button', 'n_clicks'),
      Input('update-button-mobile', 'n_clicks'),
+     Input('interval-component', 'n_intervals'),
      Input("smoker_target_temp", "value"),
      Input("meat_min_temp", "value"),
      Input("past_minutes", "value"),
@@ -187,7 +195,7 @@ app.layout = html.Div([
      Input("forecast_minutes_mobile", "value"),
      Input("rolling_avg_window_mobile", "value")]
 )
-def update_graph(n_clicks_desktop, n_clicks_mobile, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window,
+def update_graph(n_clicks_desktop, n_clicks_mobile, n_intervals, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window,
                 smoker_target_temp_mobile, meat_min_temp_mobile, past_minutes_mobile, forecast_minutes_mobile, rolling_avg_window_mobile):
     
     # Use mobile values as fallback, desktop as primary
