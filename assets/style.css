@@ -1,0 +1,44 @@
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+    #sidebar { 
+        display: none !important; 
+    }
+    #main-content { 
+        margin-left: 0 !important; 
+    }
+    #mobile-controls { 
+        display: block !important; 
+    }
+}
+
+/* Input focus styles */
+input:focus {
+    border-color: #ff6b35 !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+/* Button hover effects */
+button:hover {
+    background-color: #e55a2b !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Smooth transitions */
+button, input {
+    transition: all 0.3s ease;
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 768px) {
+    .card-style {
+        margin: 10px !important;
+        padding: 15px !important;
+    }
+    
+    .input-style {
+        width: 100% !important;
+        font-size: 18px !important;
+    }
+}

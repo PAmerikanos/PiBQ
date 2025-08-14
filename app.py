@@ -17,7 +17,8 @@ input_style = {
     'fontSize': '16px',
     'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
     'transition': 'border-color 0.3s ease',
-    'boxSizing': 'border-box'
+    'boxSizing': 'border-box',
+    'className': 'input-style'
 }
 
 label_style = {
@@ -48,7 +49,8 @@ card_style = {
     'borderRadius': '12px',
     'boxShadow': '0 2px 8px rgba(0,0,0,0.1)',
     'marginBottom': '20px',
-    'border': '1px solid #f0f0f0'
+    'border': '1px solid #f0f0f0',
+    'className': 'card-style'
 }
 
 app.layout = html.Div([
@@ -177,12 +179,13 @@ app.layout = html.Div([
             'width': '280px',
             'padding': '20px',
             'backgroundColor': '#f8f8f8',
-            'minHeight': '100vh',
+            'minHeight': 'calc(100vh - 90px)',
             'position': 'fixed',
             'left': '0',
-            'top': '80px',
+            'top': '90px',
             'overflowY': 'auto',
-            'borderRight': '1px solid #e0e0e0'
+            'borderRight': '1px solid #e0e0e0',
+            'zIndex': '1000'
         }),
 
         # Main content area
@@ -279,26 +282,8 @@ app.layout = html.Div([
             ])
         ], style={**card_style, 'margin': '20px'})
 
-    ], id='mobile-controls', style={'display': 'none'}),
+    ], id='mobile-controls', style={'display': 'none'})
 
-    # CSS for responsive design
-    html.Style(children="""
-        @media (max-width: 768px) {
-            #sidebar { display: none !important; }
-            #main-content { margin-left: 0 !important; }
-            #mobile-controls { display: block !important; }
-        }
-        
-        input:focus {
-            border-color: #ff6b35 !important;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
-        }
-        
-        button:hover {
-            background-color: #e55a2b !important;
-        }
-    """)
 ], style={
     'backgroundColor': '#fafafa',
     'minHeight': '100vh',
