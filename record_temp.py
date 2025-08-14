@@ -28,4 +28,4 @@ with open(os.path.join(dir_path, filename), 'w', encoding = 'utf-8') as f:
         f.write(f"{date_time},{smoker_temp},{meat_temp}\n")
         f.flush()
 
-        time.sleep(1)
+        time.sleep(1.1) # So we can disregard milliseconds in the app.py code
