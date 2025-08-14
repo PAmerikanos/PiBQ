@@ -338,4 +338,4 @@ def update_graph(n_clicks_desktop, n_clicks_mobile, n_intervals, smoker_target_t
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=8000, debug=True, threaded=True)
