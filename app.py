@@ -247,14 +247,14 @@ def update_graph(n_clicks_desktop, n_clicks_mobile, n_intervals, smoker_target_t
     smoker_forecast, smoker_upper_bound, smoker_lower_bound = forecast_temperature(df['smoker_temp'], X, past_steps, future_times)
     meat_forecast, meat_upper_bound, meat_lower_bound = forecast_temperature(df['meat_temp'], X, past_steps, future_times)
 
-    # BBQ-themed color palette
-    smoker_color = '#d2691e'  # Chocolate/orange for smoker
-    smoker_light = '#daa520'  # Goldenrod for smoker highlights
-    smoker_forecast_color = '#ff8c00'  # Dark orange for smoker forecast
+    # BBQ-themed color palette with high contrast
+    smoker_color = '#ff4500'  # Orange Red for smoker (fire/heat)
+    smoker_light = '#ff6347'  # Tomato for smoker highlights
+    smoker_forecast_color = '#ffa500'  # Orange for smoker forecast
     
-    meat_color = '#8b4513'  # Saddle brown for meat
-    meat_light = '#a0522d'  # Sienna for meat highlights  
-    meat_forecast_color = '#cd853f'  # Peru for meat forecast
+    meat_color = '#8b0000'  # Dark Red for meat (deep red meat color)
+    meat_light = '#dc143c'  # Crimson for meat highlights  
+    meat_forecast_color = '#b22222'  # Fire Brick for meat forecast
 
     fig = go.Figure()
 
