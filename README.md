@@ -24,7 +24,6 @@ BBQ monitoring dashboard
     ```
     git clone https://github.com/PAmerikanos/PiBQ.git
     cd PiBQ/
-    chmod +x execute.sh
     ```
 5. Set up systemd services for automatic execution:
     ```

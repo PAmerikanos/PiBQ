@@ -136,11 +136,11 @@ app.layout = html.Div([
             html.Div([
                 html.Div([
                     html.Label('Smoker Target (°C)', className='input-label'),
-                    dcc.Input(id='smoker_target_temp_mobile', type='number', min=0, max=500, step=1, value=120, className='input-field input-field-mobile')
+                    dcc.Input(id='smoker_target_temp_mobile', type='number', min=0, max=250, step=1, value=110, className='input-field input-field-mobile')
                 ], className='input-group-mobile'),
                 html.Div([
                     html.Label('Meat Minimum (°C)', className='input-label'),
-                    dcc.Input(id='meat_min_temp_mobile', type='number', min=0, max=500, step=1, value=74, className='input-field input-field-mobile')
+                    dcc.Input(id='meat_min_temp_mobile', type='number', min=0, max=250, step=1, value=74, className='input-field input-field-mobile')
                 ])
             ])
         ], className='card mobile-card'),
@@ -151,15 +151,15 @@ app.layout = html.Div([
             html.Div([
                 html.Div([
                     html.Label('History Window (min)', className='input-label'),
-                    dcc.Input(id='past_minutes_mobile', type='number', min=0, max=120, step=10, value=10, className='input-field input-field-mobile')
+                    dcc.Input(id='past_minutes_mobile', type='number', min=0, max=60, step=10, value=10, className='input-field input-field-mobile')
                 ], className='input-group-mobile'),
                 html.Div([
                     html.Label('Forecast (min)', className='input-label'),
-                    dcc.Input(id='forecast_minutes_mobile', type='number', min=0, max=120, step=10, value=10, className='input-field input-field-mobile')
+                    dcc.Input(id='forecast_minutes_mobile', type='number', min=0, max=60, step=10, value=10, className='input-field input-field-mobile')
                 ], className='input-group-mobile'),
                 html.Div([
                     html.Label('Smoothing Window', className='input-label'),
-                    dcc.Input(id='rolling_avg_window_mobile', type='number', min=1, max=1000, step=1, value=9, className='input-field input-field-mobile')
+                    dcc.Input(id='rolling_avg_window_mobile', type='number', min=1, max=100, step=1, value=9, className='input-field input-field-mobile')
                 ])
             ])
         ], className='card mobile-card')
