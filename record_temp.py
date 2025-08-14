@@ -20,12 +20,12 @@ if not os.path.exists(dir_path):
 
 with open(os.path.join(dir_path, filename), 'w', encoding = 'utf-8') as f:
     while True:
-        date_time = datetime.now().time()
+        unix_epoch = time.time()
 
         smoker_temp = smoker_sensor.get_hot_junction_temperature()
         meat_temp = meat_sensor.get_hot_junction_temperature()
 
-        f.write(f"{date_time},{smoker_temp},{meat_temp}\n")
+        f.write(f"{unix_epoch},{smoker_temp},{meat_temp}\n")
         f.flush()
 
         time.sleep(1.1) # So we can disregard milliseconds in the app.py code
