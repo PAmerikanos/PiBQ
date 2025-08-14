@@ -18,7 +18,9 @@ input_style = {
     'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
     'transition': 'border-color 0.3s ease',
     'boxSizing': 'border-box',
-    'className': 'input-style'
+    'className': 'input-style',
+    'textAlign': 'center',
+    'margin': '0 auto'
 }
 
 label_style = {
@@ -26,7 +28,9 @@ label_style = {
     'color': '#555',
     'fontWeight': '600',
     'fontSize': '14px',
-    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+    'textAlign': 'center',
+    'display': 'block'
 }
 
 button_style = {
@@ -93,11 +97,7 @@ app.layout = html.Div([
             ], style={
                 'textAlign': 'center',
                 'padding': '20px 10px',
-                'backgroundColor': '#ffffff',
-                'borderBottom': '1px solid #e0e0e0',
-                'marginBottom': '20px',
-                'borderRadius': '12px',
-                'boxShadow': '0 2px 8px rgba(0,0,0,0.1)'
+                'marginBottom': '20px'
             }),
 
             # Current Temperature Display
@@ -135,7 +135,7 @@ app.layout = html.Div([
             # Update Button
             html.Div([
                 html.Button('Update Dashboard', id='update-button', style=button_style)
-            ], style={**card_style, 'textAlign': 'center'}),
+            ], style={'textAlign': 'center', 'marginBottom': '20px'}),
 
             # Temperature Settings
             html.Div([
@@ -143,16 +143,17 @@ app.layout = html.Div([
                     'margin': '0 0 15px 0',
                     'color': '#4a4a4a',
                     'fontSize': '16px',
-                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                    'textAlign': 'center'
                 }),
                 html.Div([
-                    html.Label('Smoker Target (°C)', style=label_style),
+                    html.Label('Smoker Target °C', style=label_style),
                     dcc.Input(id='smoker_target_temp', type='number', min=0, max=200, step=1, value=107, style=input_style)
-                ], style={'marginBottom': '15px'}),
+                ], style={'marginBottom': '15px', 'textAlign': 'center'}),
                 html.Div([
-                    html.Label('Meat Minimum (°C)', style=label_style),
+                    html.Label('Meat Minimum °C', style=label_style),
                     dcc.Input(id='meat_min_temp', type='number', min=0, max=200, step=1, value=74, style=input_style)
-                ])
+                ], style={'textAlign': 'center'})
             ], style=card_style),
 
             # Analysis Settings
@@ -161,20 +162,21 @@ app.layout = html.Div([
                     'margin': '0 0 15px 0',
                     'color': '#4a4a4a',
                     'fontSize': '16px',
-                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace'
+                    'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                    'textAlign': 'center'
                 }),
                 html.Div([
-                    html.Label('History Window (min)', style=label_style),
+                    html.Label('History Window min', style=label_style),
                     dcc.Input(id='past_minutes', type='number', min=0, max=120, step=10, value=30, style=input_style)
-                ], style={'marginBottom': '15px'}),
+                ], style={'marginBottom': '15px', 'textAlign': 'center'}),
                 html.Div([
-                    html.Label('Forecast (min)', style=label_style),
+                    html.Label('Forecast min', style=label_style),
                     dcc.Input(id='forecast_minutes', type='number', min=0, max=120, step=10, value=30, style=input_style)
-                ], style={'marginBottom': '15px'}),
+                ], style={'marginBottom': '15px', 'textAlign': 'center'}),
                 html.Div([
                     html.Label('Smoothing Window', style=label_style),
                     dcc.Input(id='rolling_avg_window', type='number', min=1, max=1000, step=1, value=9, style=input_style)
-                ])
+                ], style={'textAlign': 'center'})
             ], style=card_style)
 
         ], id='sidebar', style={
