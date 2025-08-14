@@ -1,4 +1,4 @@
-# RT_temperature_dashboard
+# PiBQ
 Dashboard to monitor temperature readings from IoT sensor in real time.
 
 ## Setup
@@ -22,24 +22,25 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
     ```
 4. Set up git repo:
     ```
-    git clone https://github.com/PAmerikanos/RT_temperature_dashboard.git
-    cd RT_temperature_dashboard/
+    git clone https://github.com/PAmerikanos/PiBQ.git
+    cd PiBQ/
     chmod +x execute.sh
     ```
 5. Set up crontab for automatic execution:
     In `crontab -e` add the following line:
     ```
-    @reboot ~/RT_temperature_dashboard/execute.sh
+    @reboot ~/PiBQ/execute.sh
     ```
 
 **CAUTION:** Do not run VSCode server on the RPi for development as it overloads the device and freezes it.
 
 ## Operation
 1. Turn RPi on and connect it to the Internet. Automatic WiFi connection is set to `Pefki` SSID. The temperature recording and Flask server will initiate upon boot.
-2. On client device open browser at `http://192.168.1.XXX:8050`
+2. Locate RPi IP using the WiFi router's network manager.
+3. On client device open browser at `http://192.168.XXX.XXX` as found above.
 
 ## Troubleshooting
-From computer within the LAN connect to RPi using SSH: `ssh pi@192.168.1.XXX` / `pass: 0000`.
+From computer within the LAN connect to RPi using SSH: `ssh pi@192.168.XXX.XXX` / `pass: 0000`.
 
 `Nohup` allows the recording & serving to continue even if WiFi or SSH connection is lost.
 - `tail -f nohup.out` to monitor progress/nohup's output.

@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Navigate to the project directory
-cd /home/pi/RT_temperature_dashboard || exit
+cd /home/pi/PiBQ || exit
 
 # Activate the virtual environment
-source /home/pi/RT_temperature_dashboard/rt_plotly/bin/activate
+source /home/pi/PiBQ/rt_plotly/bin/activate
 
 # Start temperature recording
 nohup python3 record_temp.py > ./logs/record_temp.log 2>&1 &
