@@ -1,0 +1,20 @@
+[Unit]
+Description=PiBQ Temperature Recorder Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/PiBQ
+Environment=PATH=/home/pi/PiBQ/pibq/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/pi/PiBQ/pibq/bin/python3 record_temp.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pibq-recorder
+
+[Install]
+WantedBy=multi-user.target
