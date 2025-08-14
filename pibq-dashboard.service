@@ -6,8 +6,8 @@ Requires=pibq-recorder.service
 
 [Service]
 Type=simple
-User=pi
-Group=pi
+User=root
+Group=root
 WorkingDirectory=/home/pi/PiBQ
 Environment=PATH=/home/pi/PiBQ/pibq/bin:/usr/local/bin:/usr/bin:/bin
 ExecStart=/home/pi/PiBQ/pibq/bin/python3 app.py

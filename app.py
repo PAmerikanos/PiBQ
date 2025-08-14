@@ -161,7 +161,7 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
     # Past temperature values
     fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', line=dict(color='blue'), name='Target Smoker Temp')
     fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', line=dict(color='red'), name='Minimum Meat Temp')
-    
+
     fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["smoker_temp"].tail(past_steps), mode='lines', line=dict(color='magenta'), name='Actual Smoker Temp')
     fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["meat_temp"].tail(past_steps), mode='lines', line=dict(color='purple'), name='Actual Meat Temp')
 
@@ -216,4 +216,4 @@ def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, fore
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
