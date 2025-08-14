@@ -1,0 +1,66 @@
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+    #sidebar { 
+        display: none !important; 
+    }
+    
+    #main-content { 
+        margin-left: 0 !important; 
+    }
+    
+    #mobile-controls { 
+        display: block !important; 
+    }
+    
+    #mobile-header {
+        display: block !important;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 769px) {
+    #mobile-controls { 
+        display: none !important; 
+    }
+    
+    #mobile-header {
+        display: none !important;
+    }
+}
+
+/* Input focus styles */
+.input-style:focus {
+    border-color: #ff6b35 !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+/* Button hover styles */
+button:hover {
+    background-color: #e55a2b !important;
+}
+
+/* Scrollbar styling for webkit browsers */
+#sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+#sidebar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#sidebar::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+#sidebar::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* Ensure sidebar is properly scrollable */
+#sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: #ccc #f1f1f1;
+}

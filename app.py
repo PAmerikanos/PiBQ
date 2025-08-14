@@ -5,8 +5,8 @@ import pandas as pd
 from helpers import convert_to_time, forecast_temperature, parse_temperature_data
 
 
-app = Dash(assets_folder='assets')
-app.title = 'PiBQ - Real-time BBQ temperature monitoring dashboard'
+app = Dash(assets_folder='assets', external_stylesheets=['/assets/styles.css'])
+app.title = 'PiBQ - BBQ monitoring dashboard'
 
 # Common styles
 input_style = {
@@ -54,50 +54,52 @@ card_style = {
 }
 
 app.layout = html.Div([
-    # Header with logo and title
-    html.Div([
-        html.Img(
-            src='/assets/logo.png',
-            style={
-                'height': '30px',
-                'marginRight': '15px',
-                'verticalAlign': 'middle'
-            }
-        ),
-        html.H1(
-            'PiBQ',
-            style={
-                'display': 'inline-block',
-                'verticalAlign': 'middle',
-                'margin': '0',
-                'color': '#4a4a4a',
-                'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                'fontSize': '30px',
-                'fontWeight': 'bold'
-            }
-        ),
-        html.P(
-            'Real-time BBQ temperature monitoring dashboard',
-            style={
-                'margin': '5px 0 0 0',
-                'color': '#777',
-                'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
-                'fontSize': '14px',
-                'fontStyle': 'italic'
-            }
-        )
-    ], style={
-        'textAlign': 'center',
-        'padding': '20px',
-        'backgroundColor': '#fafafa',
-        'borderBottom': '1px solid #e0e0e0',
-        'marginBottom': '0'
-    }),
-
     # Main container with sidebar layout
     html.Div([
         # Sidebar for desktop
         html.Div([
+            # Header with logo and title (moved to sidebar)
+            html.Div([
+                html.Img(
+                    src='/assets/logo.png',
+                    style={
+                        'height': '30px',
+                        'marginRight': '15px',
+                        'verticalAlign': 'middle'
+                    }
+                ),
+                html.H1(
+                    'PiBQ',
+                    style={
+                        'display': 'inline-block',
+                        'verticalAlign': 'middle',
+                        'margin': '0',
+                        'color': '#4a4a4a',
+                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                        'fontSize': '24px',
+                        'fontWeight': 'bold'
+                    }
+                ),
+                html.P(
+                    'BBQ monitoring dashboard',
+                    style={
+                        'margin': '5px 0 0 0',
+                        'color': '#777',
+                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                        'fontSize': '12px',
+                        'fontStyle': 'italic'
+                    }
+                )
+            ], style={
+                'textAlign': 'center',
+                'padding': '20px 10px',
+                'backgroundColor': '#ffffff',
+                'borderBottom': '1px solid #e0e0e0',
+                'marginBottom': '20px',
+                'borderRadius': '12px',
+                'boxShadow': '0 2px 8px rgba(0,0,0,0.1)'
+            }),
+
             # Current Temperature Display
             html.Div([
                 html.H3('Current Temperatures', style={
@@ -176,13 +178,13 @@ app.layout = html.Div([
             ], style=card_style)
 
         ], id='sidebar', style={
-            'width': '280px',
+            'width': '300px',
             'padding': '20px',
             'backgroundColor': '#f8f8f8',
-            'minHeight': 'calc(100vh - 90px)',
+            'height': '100vh',
             'position': 'fixed',
             'left': '0',
-            'top': '90px',
+            'top': '0',
             'overflowY': 'auto',
             'borderRight': '1px solid #e0e0e0',
             'zIndex': '1000'
@@ -190,10 +192,50 @@ app.layout = html.Div([
 
         # Main content area
         html.Div([
-            dcc.Graph(id='graph-content', style={'height': '80vh'})
+            # Mobile header (only visible on mobile)
+            html.Div([
+                html.Img(
+                    src='/assets/logo.png',
+                    style={
+                        'height': '30px',
+                        'marginRight': '15px',
+                        'verticalAlign': 'middle'
+                    }
+                ),
+                html.H1(
+                    'PiBQ',
+                    style={
+                        'display': 'inline-block',
+                        'verticalAlign': 'middle',
+                        'margin': '0',
+                        'color': '#4a4a4a',
+                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                        'fontSize': '30px',
+                        'fontWeight': 'bold'
+                    }
+                ),
+                html.P(
+                    'BBQ monitoring dashboard',
+                    style={
+                        'margin': '5px 0 0 0',
+                        'color': '#777',
+                        'fontFamily': 'Monaco, "Lucida Console", "Courier New", Courier, monospace',
+                        'fontSize': '14px',
+                        'fontStyle': 'italic'
+                    }
+                )
+            ], id='mobile-header', style={
+                'textAlign': 'center',
+                'padding': '20px',
+                'backgroundColor': '#fafafa',
+                'borderBottom': '1px solid #e0e0e0',
+                'marginBottom': '0',
+                'display': 'none'  # Hidden on desktop
+            }),
+            
+            dcc.Graph(id='graph-content', style={'height': '100vh'})
         ], style={
-            'marginLeft': '320px',
-            'padding': '20px',
+            'marginLeft': '340px',
             'backgroundColor': '#ffffff'
         }, id='main-content')
 

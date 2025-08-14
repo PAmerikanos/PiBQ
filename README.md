@@ -1,5 +1,5 @@
 # PiBQ
-Real-time BBQ temperature monitoring dashboard
+BBQ monitoring dashboard
 
 ## Setup
 1. Configure I2C: `raspi-config > Interface Options > I2C > Enable`
