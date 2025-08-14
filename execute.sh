@@ -4,7 +4,7 @@
 cd /home/pi/PiBQ || exit
 
 # Activate the virtual environment
-source /home/pi/PiBQ/rt_plotly/bin/activate
+source /home/pi/PiBQ/pibq/bin/activate
 
 # Start temperature recording
 nohup python3 record_temp.py > ./logs/record_temp.log 2>&1 &

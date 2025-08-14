@@ -15,10 +15,11 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
     sudo apt update
     sudo apt install python3.11 python3.11-venv python3.11-dev -y
     
-    python3.11 -m venv rt_plotly
-    source rt_plotly/bin/activate
+    python3.11 -m venv pibq
+    source pibq/bin/activate
 
     pip install mcp9600 dash pandas statsmodels
+    pip install -r requirements.txt
     ```
 4. Set up git repo:
     ```
@@ -37,7 +38,7 @@ Dashboard to monitor temperature readings from IoT sensor in real time.
 ## Operation
 1. Turn RPi on and connect it to the Internet. Automatic WiFi connection is set to `Pefki` SSID. The temperature recording and Flask server will initiate upon boot.
 2. Locate RPi IP using the WiFi router's network manager.
-3. On client device open browser at `http://192.168.XXX.XXX` as found above.
+3. On client device open browser at `http://192.168.XXX.XXX:8000` as found above.
 
 ## Troubleshooting
 From computer within the LAN connect to RPi using SSH: `ssh pi@192.168.XXX.XXX` / `pass: 0000`.

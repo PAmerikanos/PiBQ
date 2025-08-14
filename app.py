@@ -5,10 +5,50 @@ import pandas as pd
 from helpers import convert_to_time, forecast_temperature, parse_temperature_data
 
 
-app = Dash()
+app = Dash(assets_folder='assets')
+app.title = 'PiBQ - Meat Monitoring'
 
 app.layout = [
-    #html.H1(children='Title of Dash App', style={'textAlign':'center'}),
+    # Header with logo and title
+    html.Div([
+        html.Img(
+            src='/assets/logo.png',
+            style={
+                'height': '30px',
+                'marginRight': '15px',
+                'verticalAlign': 'middle'
+            }
+        ),
+        html.H1(
+            'PiBQ - Meat Monitoring for Carnivores 🔥🥩',
+            style={
+                'display': 'inline-block',
+                'verticalAlign': 'middle',
+                'margin': '0',
+                'color': '#666666',
+                'fontFamily': 'Comic Sans MS, cursive, Arial, sans-serif',
+                'fontSize': '28px',
+                'fontWeight': 'bold',
+                'textShadow': '1px 1px 2px #cccccc'
+            }
+        ),
+        html.Div(
+            '"Where Thermodynamics Meets Deliciousness" 🌡️🤤',
+            style={
+                'color': '#888888',
+                'fontFamily': 'Comic Sans MS, cursive, Arial, sans-serif',
+                'fontSize': '14px',
+                'fontStyle': 'italic',
+                'marginTop': '5px'
+            }
+        )
+    ], style={
+        'textAlign': 'center',
+        'padding': '20px',
+        'backgroundColor': '#f8f9fa',
+        'borderBottom': '2px solid #dddddd',
+        'marginBottom': '20px'
+    }),
 
     dcc.Graph(id='graph-content'),
 
@@ -75,7 +115,7 @@ app.layout = [
     Input("forecast_minutes", "value"),
     Input("rolling_avg_window", "value")
 )
-def update_graph(smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window):
+def update_graph(n_clicks, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window):
     # Parse temperature data
     df = parse_temperature_data()
     df['datetime'] = pd.to_datetime(df['datetime'], format='mixed').dt.strftime('%H:%M:%S')
@@ -174,4 +214,4 @@ def update_graph(smoker_target_temp, meat_min_temp, past_minutes, forecast_minut
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=8000, debug=True, threaded=True)
