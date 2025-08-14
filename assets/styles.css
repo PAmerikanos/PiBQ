@@ -28,6 +28,9 @@ body {
 .main-content {
     margin-left: 340px;
     background-color: #ffffff;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Header styles */
@@ -236,7 +239,8 @@ body {
 
 /* Graph container */
 .graph-container {
-    height: 100vh;
+    flex: 1;
+    height: 100%;
 }
 
 /* Mobile controls */
@@ -252,6 +256,8 @@ body {
     
     .main-content { 
         margin-left: 0 !important; 
+        height: auto !important;
+        display: block !important;
     }
     
     .mobile-controls { 
