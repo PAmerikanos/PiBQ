@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import os
 from datetime import datetime
-from kalman_forecast import simple_trend_forecast
+from temperature_forecast import simple_trend_forecast
 
 
 # def forecast_temperature(temp, fsteps):

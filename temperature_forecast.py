@@ -143,7 +143,7 @@ def adaptive_forecast(timestamps, temperatures, future_steps, future_dt=1.0):
         return exponential_smoothing_forecast(timestamps, temperatures, future_steps, future_dt)
 
 # Main forecasting function - automatically selects best method
-def kalman_forecast_temperature(timestamps, temperatures, future_steps, future_dt=1.0):
+def forecast_temperature(timestamps, temperatures, future_steps, future_dt=1.0):
     """
     Main temperature forecasting function for BBQ monitoring.
     Automatically selects the best forecasting method based on data characteristics.
@@ -158,6 +158,13 @@ def kalman_forecast_temperature(timestamps, temperatures, future_steps, future_d
         predictions, upper_bound, lower_bound
     """
     return adaptive_forecast(timestamps, temperatures, future_steps, future_dt)
+
+# Backward compatibility - keep the old function name
+def kalman_forecast_temperature(timestamps, temperatures, future_steps, future_dt=1.0):
+    """
+    Legacy function name for backward compatibility.
+    """
+    return forecast_temperature(timestamps, temperatures, future_steps, future_dt)
 
 # Alternative forecasting methods you can use directly:
 # - exponential_smoothing_forecast() - Balanced approach for most BBQ scenarios
