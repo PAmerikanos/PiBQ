@@ -80,6 +80,8 @@ def parse_temperature_data():
     csv_files = [f for f in all_files if f.startswith(today_date) and f.endswith('.csv')]
     csv_files.sort()
 
+    assert csv_files, "No temperature data files found for today."
+
     # List to hold dataframes
     df_list = []
 
