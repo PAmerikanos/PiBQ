@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import os
 from datetime import datetime
+from kalman_forecast import simple_trend_forecast
 
 
 # def forecast_temperature(temp, fsteps):
@@ -30,9 +31,7 @@ def convert_to_time(future_times, full_time_min):
     
     return future_time_strings
 
-def forecast_temperature(temp_data, X, past_steps, future_times):
-    y = temp_data.values[-past_steps:]
-
+def forecast_temperature(X, y, future_times):
     # Polynomial Features Transformation (e.g., degree 2 for quadratic regression)
     degree = 3
     poly = PolynomialFeatures(degree=degree)
@@ -64,35 +63,92 @@ def forecast_temperature(temp_data, X, past_steps, future_times):
 
     return future_predictions, upper_bound, lower_bound
 
-def parse_temperature_data():
+def parse_temperature_data(previous_days):
     # Parse all temperature data from today's sessions
 
     # Get today's date in YYYYMMDD format
     today_date = datetime.now().strftime('%Y%m%d')
+    date_range = [today_date]
+    for i in range(previous_days):
+        date = (datetime.now() - pd.Timedelta(days=i)).strftime('%Y%m%d')
+        date_range.append(date)
 
     # Define the path to the folder
     folder_path = './temperature/'
 
     # List all files in the directory
     all_files = os.listdir(folder_path)
-
-    # Filter files that start with today's date and end with .csv
-    csv_files = [f for f in all_files if f.startswith(today_date) and f.endswith('.csv')]
+    csv_files = [f for f in all_files if f.endswith('.csv')]
     csv_files.sort()
+    if not csv_files:
+        print("No temperature data files found in folder")
+        return None
 
-    assert csv_files, "No temperature data files found for today."
-
-    # List to hold dataframes
-    df_list = []
-
-    # Load each csv file into a dataframe and append to list
-    for file in csv_files:
-        file_path = os.path.join(folder_path, file)
+    if previous_days == 0: # Load most recent session
+        file_path = os.path.join(folder_path, csv_files[-1])
         df = pd.read_csv(file_path, header=None, names=['datetime', 'smoker_temp', 'meat_temp'])
-        df_list.append(df)
+        return df
+    else:
+        # Filter files that start with today's date and end with .csv
+        filtered_files = []
 
-    # Concatenate all dataframes into a single dataframe
-    combined_df = pd.concat(df_list, ignore_index=True)
+        for f in csv_files:
+            split_name = f.split("_")
+            if split_name[0] in date_range:
+                filtered_files.append(f)
+        
+        if not filtered_files:
+            print("No temperature data files found for specified date range")
+            return None
 
-    # Return the combined dataframe
-    return combined_df
+        # List to hold dataframes
+        df_list = []
+
+        # Load each csv file into a dataframe and append to list
+        for file in filtered_files:
+            file_path = os.path.join(folder_path, file)
+            df = pd.read_csv(file_path, header=None, names=['datetime', 'smoker_temp', 'meat_temp'])
+            df_list.append(df)
+
+        # Concatenate all dataframes into a single dataframe
+        combined_df = pd.concat(df_list, ignore_index=True)
+
+        # Return the combined dataframe
+        return combined_df
+
+def enhanced_forecast_temperature(X, y, future_times, method='simple'):
+    """
+    Enhanced forecasting with multiple methods
+    
+    Args:
+        X: timestamps (seconds from start) as 2D array
+        y: temperature measurements
+        future_times: future time points to predict
+        method: 'simple' or 'polynomial'
+    
+    Returns:
+        predictions, upper_bound, lower_bound
+    """
+    if method == 'simple':
+        try:
+            timestamps = X.flatten()
+            temperatures = y
+            future_steps = len(future_times)
+            
+            predictions, upper_bound, lower_bound = simple_trend_forecast(
+                timestamps, temperatures, future_steps, future_dt=1.0
+            )
+            
+            # If simple forecast returns empty arrays, fall back to polynomial
+            if len(predictions) == 0:
+                return forecast_temperature(X, y, future_times)
+                
+            return predictions, upper_bound, lower_bound
+            
+        except Exception as e:
+            print(f"Simple forecast failed, using polynomial fallback: {e}")
+            return forecast_temperature(X, y, future_times)
+    
+    else:
+        # Use existing polynomial method
+        return forecast_temperature(X, y, future_times)

@@ -40,6 +40,15 @@ BBQ monitoring dashboard
 2. Locate RPi IP using the WiFi router's network manager.
 3. On client device open browser at `http://192.168.XXX.XXX:8000` as found above.
 
+## Features
+- **Real-time Temperature Monitoring**: Live display of smoker and meat temperatures
+- **Smart Forecasting**: Simple trend-based temperature prediction with confidence bands
+- **Steady-State Detection**: Automatically adjusts predictions for stable temperatures
+- **Customizable Settings**: Adjustable target temperatures, forecast windows, and smoothing
+- **Historical Data**: View multiple sessions and analyze cooking patterns
+- **Mobile-Friendly**: Responsive design for monitoring on mobile devices
+- **Auto-refresh**: Dashboard updates every 60 seconds automatically
+
 ## Troubleshooting
 From computer within the LAN connect to RPi using SSH: `ssh pi@192.168.XXX.XXX` / `pass: 0000`.
 
@@ -52,9 +61,10 @@ sudo systemctl status pibq-dashboard
 Restart PiBQ services with `sudo systemctl daemon-reload`.
 
 ## ToDo
-- Fix: cannot resume monitoring from previous day's measurements.
-- Fix: Check why smoker/meat probes show a 2*C offset.
-- Fix: Time offsets with window start/prediction start/etc.
+- ✅ Fix: Improve prediction model (Implemented simple trend forecasting with steady-state detection)
+- Fix: Check why smoker/meat probes show a 2°C offset.
+- Add: Temperature alerts and notifications
+- Add: Cooking phase detection and time estimates
 
 ## References
 - https://www.pi-shop.ch/thermocouple-amplifier-breakout
