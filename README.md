@@ -54,6 +54,7 @@ Restart PiBQ services with `sudo systemctl daemon-reload`.
 ## ToDo
 - Fix: cannot resume monitoring from previous day's measurements.
 - Fix: Check why smoker/meat probes show a 2*C offset.
+- Fix: Time offsets with window start/prediction start/etc.
 
 ## References
 - https://www.pi-shop.ch/thermocouple-amplifier-breakout
