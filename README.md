@@ -32,11 +32,6 @@ BBQ monitoring dashboard
     sudo systemctl start pibq-recorder
     sudo systemctl start pibq-dashboard
     ```
-    Check service status:
-    ```
-    sudo systemctl status pibq-recorder
-    sudo systemctl status pibq-dashboard
-    ```
 
 **CAUTION:** Do not run VSCode server on the RPi for development as it overloads the device and freezes it.
 
@@ -48,9 +43,17 @@ BBQ monitoring dashboard
 ## Troubleshooting
 From computer within the LAN connect to RPi using SSH: `ssh pi@192.168.XXX.XXX` / `pass: 0000`.
 
-`Nohup` allows the recording & serving to continue even if WiFi or SSH connection is lost.
-- `tail -f nohup.out` to monitor progress/nohup's output.
-- `kill <PID>` to kill either process.
+Check service status & logs:
+```
+sudo systemctl status pibq-recorder
+sudo systemctl status pibq-dashboard
+```
+
+Restart PiBQ services with `sudo systemctl daemon-reload`.
+
+## ToDo
+- Fix: cannot resume monitoring from previous day's measurements.
+- Fix: Check why smoker/meat probes show a 2*C offset.
 
 ## References
 - https://www.pi-shop.ch/thermocouple-amplifier-breakout

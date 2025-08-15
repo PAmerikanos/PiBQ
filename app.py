@@ -152,7 +152,7 @@ def update_graph(n_clicks, n_intervals, smoker_target_temp, meat_min_temp, past_
 
 
     # Reshape the data to fit the model
-    full_time_min = df['datetime'].min()  # define this based on your data
+    full_time_min = df['datetime'].min()
     full_time = (df['datetime'] - full_time_min).dt.total_seconds().values.reshape(-1, 1)
     X = full_time[-past_steps:]
 
@@ -165,43 +165,52 @@ def update_graph(n_clicks, n_intervals, smoker_target_temp, meat_min_temp, past_
     smoker_forecast, smoker_upper_bound, smoker_lower_bound = forecast_temperature(df['smoker_temp'], X, past_steps, future_times)
     meat_forecast, meat_upper_bound, meat_lower_bound = forecast_temperature(df['meat_temp'], X, past_steps, future_times)
 
+    time_now = df['datetime'].max()
+    time_start_window = time_now - pd.Timedelta(minutes=past_min)
+
     # BBQ-themed color palette with high contrast
-    smoker_color = '#ff4500'  # Orange Red for smoker (fire/heat)
-    smoker_light = '#ff6347'  # Tomato for smoker highlights
-    smoker_forecast_color = '#ffa500'  # Orange for smoker forecast
+    smoker_full = '#228B22'  # Forest Green for smoker full history
+    smoker_window = '#32CD32'  # Lime Green for smoker analysis window
+    smoker_forecast = '#90EE90'  # Light Green for smoker forecast
     
-    meat_color = '#8b0000'  # Dark Red for meat (deep red meat color)
-    meat_light = '#dc143c'  # Crimson for meat highlights  
-    meat_forecast_color = '#b22222'  # Fire Brick for meat forecast
+    meat_full = '#8B0000'  # Dark Red for meat full history
+    meat_window = '#DC143C'  # Crimson for meat analysis window
+    meat_forecast = '#FF6347'  # Tomato for meat forecast
 
     fig = go.Figure()
 
     # Past temperature values with BBQ-themed colors
     fig.add_scatter(x=df["datetime"], y=df["smoker_temp"], mode='lines', 
-                   line=dict(color=smoker_color, width=2), 
+                   line=dict(color=smoker_full, width=3), 
                    name='Full history', legendgroup='smoker', legendgrouptitle_text="🔥 Smoker")
     fig.add_scatter(x=df["datetime"], y=df["meat_temp"], mode='lines', 
-                   line=dict(color=meat_color, width=2), 
+                   line=dict(color=meat_full, width=3), 
                    name='Full history', legendgroup='meat', legendgrouptitle_text="🥩 Meat")
 
     fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["smoker_temp"].tail(past_steps), mode='lines', 
-                   line=dict(color=smoker_light, width=3), name='Analysis window', legendgroup='smoker')
+                   line=dict(color=smoker_window, width=3), name='Analysis window', legendgroup='smoker')
     fig.add_scatter(x=df["datetime"].tail(past_steps), y=df["meat_temp"].tail(past_steps), mode='lines', 
-                   line=dict(color=meat_light, width=3), name='Analysis window', legendgroup='meat')
+                   line=dict(color=meat_window, width=3), name='Analysis window', legendgroup='meat')
 
     # Target temperature values
-    fig.add_hline(y=smoker_target, line_width=2, line_color=smoker_color, line_dash="dash",
+    fig.add_hline(y=smoker_target, line_width=2, line_color=smoker_full, line_dash="dash",
                  annotation_text=f"Target: {smoker_target}°C")
-    fig.add_hline(y=meat_min, line_width=2, line_color=meat_color, line_dash="dash",
+    fig.add_hline(y=meat_min, line_width=2, line_color=meat_full, line_dash="dash",
                  annotation_text=f"Min: {meat_min}°C")
 
     # Predicted temperature values
     fig.add_scatter(x=future_time_strings, y=smoker_forecast, mode='lines', 
-                   line=dict(color=smoker_forecast_color, width=2, dash='dot'), 
+                   line=dict(color=smoker_forecast, width=2, dash='dot'), 
                    name='Forecast', legendgroup='smoker')
     fig.add_scatter(x=future_time_strings, y=meat_forecast, mode='lines', 
-                   line=dict(color=meat_forecast_color, width=2, dash='dot'), 
+                   line=dict(color=meat_forecast, width=2, dash='dot'), 
                    name='Forecast', legendgroup='meat')
+
+    # Add vertical lines for time markers
+    fig.add_vline(x=time_now, line_width=2, line_color="#4FB0D6", line_dash="solid",
+                 annotation_text="Now", annotation_position="top")
+    fig.add_vline(x=time_start_window, line_width=2, line_color='#4FB0D6', line_dash="solid",
+                 annotation_text="Analysis Window", annotation_position="top")
     #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 0], mode='lines', line=dict(width=0), showlegend=False)
     #fig.add_scatter(x=future_time_strings, y=meat_confidence_intervals[:, 1], mode='lines', fill='tonexty', fillcolor='rgba(255, 105, 180, 0.3)', line=dict(width=0), showlegend=False)
 
@@ -256,4 +265,4 @@ def update_graph(n_clicks, n_intervals, smoker_target_temp, meat_min_temp, past_
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=8000, debug=False, threaded=True)
