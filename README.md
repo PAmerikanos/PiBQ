@@ -61,7 +61,7 @@ sudo systemctl status pibq-dashboard
 Restart PiBQ services with `sudo systemctl daemon-reload`.
 
 ## ToDo
-- ✅ Fix: Improve prediction model (Implemented simple trend forecasting with steady-state detection)
+- Fix: Improve prediction model
 - Fix: Check why smoker/meat probes show a 2°C offset.
 - Add: Temperature alerts and notifications
 - Add: Cooking phase detection and time estimates
