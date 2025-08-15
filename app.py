@@ -14,9 +14,9 @@ app._favicon = 'favicon.png'
 app.layout = html.Div([
     # Main container with sidebar layout
     html.Div([
-        # Sidebar for desktop
+        # Sidebar - will stack vertically on mobile
         html.Div([
-            # Header with logo and title (moved to sidebar)
+            # Header with logo and title
             html.Div([
                 html.Img(
                     src='/assets/logo.png',
@@ -59,11 +59,11 @@ app.layout = html.Div([
                 html.H3('Target Temps', className='section-header section-header-small'),
                 html.Div([
                     html.Label('Smoker Target (°C)', className='input-label'),
-                    dcc.Input(id='smoker_target_temp', type='number', min=0, max=200, step=1, value=107, className='input-field')
+                    dcc.Input(id='smoker_target_temp', type='number', min=0, step=1, value=120, className='input-field')
                 ], className='input-group'),
                 html.Div([
                     html.Label('Meat Minimum (°C)', className='input-label'),
-                    dcc.Input(id='meat_min_temp', type='number', min=0, max=200, step=1, value=74, className='input-field')
+                    dcc.Input(id='meat_min_temp', type='number', min=0, step=1, value=74, className='input-field')
                 ], className='input-group')
             ], className='card'),
 
@@ -72,11 +72,11 @@ app.layout = html.Div([
                 html.H3('Forecast Temps', className='section-header section-header-small'),
                 html.Div([
                     html.Label('History Window (min)', className='input-label'),
-                    dcc.Input(id='past_minutes', type='number', min=0, max=120, step=10, value=30, className='input-field')
+                    dcc.Input(id='past_minutes', type='number', min=0, step=1, value=10, className='input-field')
                 ], className='input-group'),
                 html.Div([
                     html.Label('Forecast (min)', className='input-label'),
-                    dcc.Input(id='forecast_minutes', type='number', min=0, max=120, step=10, value=30, className='input-field')
+                    dcc.Input(id='forecast_minutes', type='number', min=0, step=1, value=10, className='input-field')
                 ], className='input-group'),
                 html.Div([
                     html.Label('Smoothing Window (samples)', className='input-label'),
@@ -88,83 +88,10 @@ app.layout = html.Div([
 
         # Main content area
         html.Div([
-            # Mobile header (only visible on mobile)
-            html.Div([
-                html.Img(
-                    src='/assets/logo.png',
-                    className='logo'
-                ),
-                html.H1(
-                    'PiBQ',
-                    className='title mobile-title'
-                ),
-                html.P(
-                    'BBQ monitoring dashboard',
-                    className='subtitle mobile-subtitle'
-                )
-            ], className='mobile-header'),
-            
             dcc.Graph(id='graph-content', className='graph-container')
         ], className='main-content')
 
     ], className='main-container'),
-
-    # Mobile controls (hidden on desktop)
-    html.Div([
-        # Current Temperature Display for Mobile
-        html.Div([
-            html.H3('Current Temperatures', className='section-header mobile-section-header'),
-            html.Div([
-                html.Div([
-                    html.Span('🔥 Smoker: ', className='temp-label-mobile'),
-                    html.Span(id='current-smoker-temp-mobile', children='--°C', className='temp-value-mobile smoker-temp')
-                ], className='temp-display-mobile'),
-                html.Div([
-                    html.Span('🥩 Meat: ', className='temp-label-mobile'),
-                    html.Span(id='current-meat-temp-mobile', children='--°C', className='temp-value-mobile meat-temp')
-                ], className='temp-display-mobile')
-            ])
-        ], className='card mobile-card'),
-
-        html.Div([
-            html.Button('Update Dashboard', id='update-button-mobile', className='button button-mobile')
-        ]),
-
-        # Mobile Temperature Settings
-        html.Div([
-            html.H4('Temperature Settings', className='section-header mobile-section-header'),
-            html.Div([
-                html.Div([
-                    html.Label('Smoker Target (°C)', className='input-label'),
-                    dcc.Input(id='smoker_target_temp_mobile', type='number', min=0, max=250, step=1, value=110, className='input-field input-field-mobile')
-                ], className='input-group-mobile'),
-                html.Div([
-                    html.Label('Meat Minimum (°C)', className='input-label'),
-                    dcc.Input(id='meat_min_temp_mobile', type='number', min=0, max=250, step=1, value=74, className='input-field input-field-mobile')
-                ])
-            ])
-        ], className='card mobile-card'),
-
-        # Mobile Analysis Settings
-        html.Div([
-            html.H4('Analysis Settings', className='section-header mobile-section-header'),
-            html.Div([
-                html.Div([
-                    html.Label('History Window (min)', className='input-label'),
-                    dcc.Input(id='past_minutes_mobile', type='number', min=0, max=60, step=10, value=10, className='input-field input-field-mobile')
-                ], className='input-group-mobile'),
-                html.Div([
-                    html.Label('Forecast (min)', className='input-label'),
-                    dcc.Input(id='forecast_minutes_mobile', type='number', min=0, max=60, step=10, value=10, className='input-field input-field-mobile')
-                ], className='input-group-mobile'),
-                html.Div([
-                    html.Label('Smoothing Window', className='input-label'),
-                    dcc.Input(id='rolling_avg_window_mobile', type='number', min=1, max=100, step=1, value=9, className='input-field input-field-mobile')
-                ])
-            ])
-        ], className='card mobile-card')
-
-    ], className='mobile-controls'),
 
     # Hidden timer for auto-refresh every 60 seconds
     dcc.Interval(
@@ -178,32 +105,23 @@ app.layout = html.Div([
 @callback(
     [Output('graph-content', 'figure'),
      Output('current-smoker-temp', 'children'),
-     Output('current-meat-temp', 'children'),
-     Output('current-smoker-temp-mobile', 'children'),
-     Output('current-meat-temp-mobile', 'children')],
+     Output('current-meat-temp', 'children')],
     [Input('update-button', 'n_clicks'),
-     Input('update-button-mobile', 'n_clicks'),
      Input('interval-component', 'n_intervals'),
      Input("smoker_target_temp", "value"),
      Input("meat_min_temp", "value"),
      Input("past_minutes", "value"),
      Input("forecast_minutes", "value"),
-     Input("rolling_avg_window", "value"),
-     Input("smoker_target_temp_mobile", "value"),
-     Input("meat_min_temp_mobile", "value"),
-     Input("past_minutes_mobile", "value"),
-     Input("forecast_minutes_mobile", "value"),
-     Input("rolling_avg_window_mobile", "value")]
+     Input("rolling_avg_window", "value")]
 )
-def update_graph(n_clicks_desktop, n_clicks_mobile, n_intervals, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window,
-                smoker_target_temp_mobile, meat_min_temp_mobile, past_minutes_mobile, forecast_minutes_mobile, rolling_avg_window_mobile):
+def update_graph(n_clicks, n_intervals, smoker_target_temp, meat_min_temp, past_minutes, forecast_minutes, rolling_avg_window):
     
-    # Use mobile values as fallback, desktop as primary
-    smoker_target = smoker_target_temp if smoker_target_temp is not None else smoker_target_temp_mobile
-    meat_min = meat_min_temp if meat_min_temp is not None else meat_min_temp_mobile
-    past_min = past_minutes if past_minutes is not None else past_minutes_mobile
-    forecast_min = forecast_minutes if forecast_minutes is not None else forecast_minutes_mobile
-    rolling_window = rolling_avg_window if rolling_avg_window is not None else rolling_avg_window_mobile
+    # Use the input values directly
+    smoker_target = smoker_target_temp
+    meat_min = meat_min_temp
+    past_min = past_minutes
+    forecast_min = forecast_minutes
+    rolling_window = rolling_avg_window
     # Parse temperature data
     df = parse_temperature_data()
     df['datetime'] = pd.to_datetime(df['datetime'], unit='s', utc=True).dt.tz_convert('Europe/Athens')
@@ -334,7 +252,7 @@ def update_graph(n_clicks_desktop, n_clicks_mobile, n_intervals, smoker_target_t
         margin=dict(l=60, r=40, t=40, b=60)
     )
 
-    return fig, current_smoker, current_meat, current_smoker, current_meat
+    return fig, current_smoker, current_meat
 
 
 if __name__ == '__main__':
