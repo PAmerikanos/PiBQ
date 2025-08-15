@@ -2,55 +2,50 @@ import numpy as np
 import pandas as pd
 from scipy import optimize
 
-def exponential_smoothing_forecast(timestamps, temperatures, future_steps, future_dt=1.0):
+def double_exponential_smoothing_forecast(timestamps, temperatures, future_steps, future_dt=1.0):
     """
-    Triple Exponential Smoothing (Holt-Winters) for BBQ temperature forecasting.
-    Handles level, trend, and seasonality patterns common in cooking.
+    Double Exponential Smoothing (Holt's method) for BBQ temperature forecasting.
+    Handles level and trend only - no seasonality needed for BBQ.
+    Best for short-term forecasting with trending data.
     """
-    if len(temperatures) < 10:
+    if len(temperatures) < 5:
         return simple_trend_forecast(timestamps, temperatures, future_steps, future_dt)
     
-    # Parameters for exponential smoothing
-    alpha = 0.3  # Level smoothing
-    beta = 0.2   # Trend smoothing
-    gamma = 0.1  # Seasonal smoothing
+    # Parameters for exponential smoothing (optimized for BBQ)
+    alpha = 0.4  # Level smoothing - higher for responsiveness
+    beta = 0.3   # Trend smoothing - moderate for stability
     
     # Initialize
     level = temperatures[0]
-    trend = (temperatures[1] - temperatures[0])
-    seasonals = np.zeros(12)  # 12-point seasonal cycle (e.g., 12 minutes)
+    trend = temperatures[1] - temperatures[0] if len(temperatures) > 1 else 0
     
     # Fit the model
-    smoothed = []
-    for i, temp in enumerate(temperatures):
-        if i == 0:
-            smoothed.append(level)
-            continue
-            
-        last_level, level = level, alpha * temp + (1 - alpha) * (level + trend)
+    smoothed = [level]
+    for i in range(1, len(temperatures)):
+        temp = temperatures[i]
+        last_level = level
+        level = alpha * temp + (1 - alpha) * (level + trend)
         trend = beta * (level - last_level) + (1 - beta) * trend
-        
-        # Update seasonal component
-        season_idx = i % len(seasonals)
-        seasonals[season_idx] = gamma * (temp - level) + (1 - gamma) * seasonals[season_idx]
-        
-        smoothed.append(level + trend + seasonals[season_idx])
+        smoothed.append(level)
     
-    # Forecast
+    # Generate predictions
     predictions = []
     for step in range(1, future_steps + 1):
-        season_idx = (len(temperatures) + step - 1) % len(seasonals)
-        pred = level + step * trend + seasonals[season_idx]
+        pred = level + step * trend
         predictions.append(pred)
     
     predictions = np.array(predictions)
     
-    # Calculate confidence bounds
-    residuals = np.array(temperatures) - np.array(smoothed)
-    std_error = np.std(residuals)
+    # Calculate confidence bounds based on recent forecast errors
+    if len(temperatures) > 3:
+        recent_errors = np.array(temperatures[1:]) - np.array(smoothed[1:])
+        std_error = np.std(recent_errors[-min(15, len(recent_errors)):])
+    else:
+        std_error = 1.0
     
-    time_factor = np.sqrt(np.arange(1, future_steps + 1))
-    confidence_width = std_error * (1.0 + 0.3 * time_factor)
+    # Conservative confidence bounds for short-term forecasting
+    time_factor = np.sqrt(np.arange(1, future_steps + 1) * future_dt / 60.0)
+    confidence_width = std_error * (1.0 + 0.2 * time_factor)
     
     upper_bound = predictions + confidence_width
     lower_bound = predictions - confidence_width
@@ -59,53 +54,77 @@ def exponential_smoothing_forecast(timestamps, temperatures, future_steps, futur
 
 def exponential_decay_forecast(timestamps, temperatures, future_steps, future_dt=1.0):
     """
-    Exponential approach to target temperature - good for BBQ heating/cooling curves.
-    Models temperature as approaching an asymptotic target.
+    Exponential approach to target temperature - excellent for BBQ heating/cooling curves.
+    Models temperature as: T(t) = T_target + (T0 - T_target) * exp(-t/tau)
+    Perfect for meat approaching target temperature or grill cooling down.
     """
-    if len(temperatures) < 5:
+    if len(temperatures) < 6:
         return simple_trend_forecast(timestamps, temperatures, future_steps, future_dt)
     
-    # Use recent data
-    recent_points = min(30, len(temperatures))
+    # Use recent data (enough for good fit, not too much for responsiveness)
+    recent_points = min(25, len(temperatures))
     recent_temps = np.array(temperatures[-recent_points:])
-    recent_times = np.array(timestamps[-recent_points:]) - timestamps[-recent_points]
+    recent_times = np.array(timestamps[-recent_points:])
     
-    # Fit exponential model: T(t) = T_target + (T0 - T_target) * exp(-t/tau)
+    # Normalize time to start from 0
+    time_normalized = recent_times - recent_times[0]
+    
+    # Exponential model function
     def exponential_model(t, T_target, T0, tau):
-        return T_target + (T0 - T_target) * np.exp(-t / max(tau, 1.0))
+        return T_target + (T0 - T_target) * np.exp(-t / max(tau, 0.1))
     
     try:
-        # Initial guesses
+        # Better initial guesses for BBQ scenarios
         T0_guess = recent_temps[0]
-        T_target_guess = recent_temps[-1] + (recent_temps[-1] - recent_temps[0]) * 2
-        tau_guess = (recent_times[-1] - recent_times[0]) / 2
         
-        # Fit the model
-        popt, _ = optimize.curve_fit(
+        # Target temp: extrapolate current trend or use recent average
+        recent_trend = (recent_temps[-1] - recent_temps[0]) / max(time_normalized[-1], 1.0)
+        if abs(recent_trend) > 0.1:  # If there's a trend
+            T_target_guess = recent_temps[-1] + recent_trend * 300  # Extrapolate 5 min ahead
+        else:  # If stable, assume current is target
+            T_target_guess = np.mean(recent_temps[-5:])
+        
+        # Time constant: estimate from data length
+        tau_guess = time_normalized[-1] / 3.0  # About 1/3 of the observation period
+        
+        # Constrain the fit to reasonable bounds for BBQ
+        bounds = (
+            [min(recent_temps) - 20, min(recent_temps) - 10, 1.0],    # Lower bounds
+            [max(recent_temps) + 50, max(recent_temps) + 10, 3600.0]  # Upper bounds (max 1hr time constant)
+        )
+        
+        # Fit the model with bounds
+        popt, pcov = optimize.curve_fit(
             exponential_model, 
-            recent_times, 
+            time_normalized, 
             recent_temps,
             p0=[T_target_guess, T0_guess, tau_guess],
-            maxfev=1000
+            bounds=bounds,
+            maxfev=2000
         )
         
         T_target, T0, tau = popt
         
         # Generate predictions
-        last_time = recent_times[-1]
+        last_time = time_normalized[-1]
         future_times = last_time + np.arange(1, future_steps + 1) * future_dt
         predictions = exponential_model(future_times, T_target, T0, tau)
         
+        # Calculate goodness of fit
+        fitted_temps = exponential_model(time_normalized, T_target, T0, tau)
+        fit_error = np.std(recent_temps - fitted_temps)
+        
+        # If fit is poor, fall back to simpler method
+        if fit_error > np.std(recent_temps) * 0.8:  # Fit doesn't explain much variance
+            return double_exponential_smoothing_forecast(timestamps, temperatures, future_steps, future_dt)
+        
     except:
-        # Fallback to simple trend if fitting fails
-        return simple_trend_forecast(timestamps, temperatures, future_steps, future_dt)
+        # Fallback if fitting fails
+        return double_exponential_smoothing_forecast(timestamps, temperatures, future_steps, future_dt)
     
-    # Calculate confidence bounds
-    residuals = recent_temps - exponential_model(recent_times, T_target, T0, tau)
-    std_error = np.std(residuals)
-    
+    # Calculate confidence bounds based on fit quality
     time_factor = np.sqrt(np.arange(1, future_steps + 1) * future_dt / 60.0)
-    confidence_width = std_error * (1.0 + 0.4 * time_factor)
+    confidence_width = fit_error * (1.0 + 0.3 * time_factor)
     
     upper_bound = predictions + confidence_width
     lower_bound = predictions - confidence_width
@@ -193,23 +212,31 @@ def simple_trend_forecast(timestamps, temperatures, future_steps, future_dt=1.0)
 
 def adaptive_forecast(timestamps, temperatures, future_steps, future_dt=1.0):
     """
-    Adaptive forecasting that chooses the best method based on data characteristics.
+    Adaptive forecasting optimized for BBQ temperature monitoring.
+    Chooses the best method based on data characteristics - no seasonality.
     """
-    if len(temperatures) < 10:
+    if len(temperatures) < 8:
         return simple_trend_forecast(timestamps, temperatures, future_steps, future_dt)
     
-    # Analyze temperature characteristics
-    recent_temps = np.array(temperatures[-20:])
+    # Analyze recent temperature characteristics
+    recent_temps = np.array(temperatures[-min(25, len(temperatures)):])
     variance = np.var(recent_temps)
-    trend_strength = abs(recent_temps[-1] - recent_temps[0]) / len(recent_temps)
     
-    # Choose method based on characteristics
-    if variance < 1.0:  # Very stable - use moving average
+    # Calculate trend strength over recent data
+    if len(recent_temps) > 5:
+        early_half = recent_temps[:len(recent_temps)//2]
+        late_half = recent_temps[len(recent_temps)//2:]
+        trend_strength = abs(np.mean(late_half) - np.mean(early_half))
+    else:
+        trend_strength = 0
+    
+    # Choose method based on BBQ-specific characteristics
+    if variance < 0.5:  # Very stable temperature - use moving average
         return moving_average_forecast(timestamps, temperatures, future_steps, future_dt)
-    elif trend_strength > 0.5:  # Strong trend - use exponential model
+    elif trend_strength > 2.0 and len(temperatures) > 10:  # Strong trend - use exponential model
         return exponential_decay_forecast(timestamps, temperatures, future_steps, future_dt)
-    else:  # Mixed behavior - use exponential smoothing
-        return exponential_smoothing_forecast(timestamps, temperatures, future_steps, future_dt)
+    else:  # Moderate trend/noise - use double exponential smoothing
+        return double_exponential_smoothing_forecast(timestamps, temperatures, future_steps, future_dt)
 
 # Main forecasting function - automatically selects best method
 def kalman_forecast_temperature(timestamps, temperatures, future_steps, future_dt=1.0):
@@ -229,7 +256,12 @@ def kalman_forecast_temperature(timestamps, temperatures, future_steps, future_d
     return adaptive_forecast(timestamps, temperatures, future_steps, future_dt)
 
 # Alternative forecasting methods you can use directly:
-# - exponential_smoothing_forecast() - Best for data with patterns/seasonality
-# - exponential_decay_forecast() - Best for heating/cooling curves
-# - moving_average_forecast() - Best for stable temperatures
-# - simple_trend_forecast() - Fallback method
+# - double_exponential_smoothing_forecast() - Best for trending data with noise
+# - exponential_decay_forecast() - Best for heating/cooling curves approaching target
+# - moving_average_forecast() - Best for very stable temperatures
+# - simple_trend_forecast() - Simple linear trend (fallback method)
+#
+# For BBQ temperature forecasting (<1hr), recommended priority:
+# 1. Double exponential smoothing - handles trend + noise well
+# 2. Exponential decay - good for approach-to-target behavior
+# 3. Moving average - best for stable cooking temperatures
