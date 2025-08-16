@@ -1,0 +1,45 @@
+# PiBQ Default Configuration Values
+
+# Target Temperature Settings
+temperatures:
+  smoker_target: 120  # Default smoker target temperature in °C
+  meat_minimum: 74    # Default meat minimum temperature in °C
+  constraints:
+    min: 0            # Minimum allowed temperature
+    max: 500          # Maximum allowed temperature
+
+# Forecast and Analysis Settings
+forecast:
+  past_minutes: 10          # History window in minutes
+  forecast_minutes: 10      # Forecast window in minutes
+  rolling_avg_window: 9     # Smoothing window in samples
+  constraints:
+    past_minutes:
+      min: 0
+      max: 1440         # 24 hours max
+    forecast_minutes:
+      min: 0
+      max: 1440         # 24 hours max
+    rolling_avg_window:
+      min: 1
+      max: 1000
+
+# Session Settings
+session:
+  previous_days: 0    # Number of previous days to include (0 = latest session)
+  utc_offset: 3       # UTC offset in hours (+3 for EEST, +2 for EET)
+  constraints:
+    previous_days:
+      min: 0
+      max: 365        # 1 year max
+    utc_offset:
+      min: -12
+      max: 12
+
+# Auto-update Settings
+update:
+  interval_seconds: 60  # Auto-refresh interval in seconds
+  constraints:
+    interval_seconds:
+      min: 1
+      max: 3600       # 1 hour max

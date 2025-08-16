@@ -2,7 +2,17 @@ from dash import Dash, html, dcc, callback, Output, Input
 import plotly.graph_objs as go
 import numpy as np
 import pandas as pd
+import yaml
+import os
 from helpers import convert_to_time, forecast_temperature, enhanced_forecast_temperature, parse_temperature_data
+
+# Load configuration defaults
+def load_config():
+    config_path = os.path.join(os.path.dirname(__file__), 'defaults.yaml')
+    with open(config_path, 'r') as file:
+        return yaml.safe_load(file)
+
+config = load_config()
 
 
 app = Dash(__name__, assets_folder='assets', external_stylesheets=['/assets/styles.css'])
@@ -60,7 +70,11 @@ app.layout = html.Div([
                 html.Div([
                     html.Label('Smoker Target (°C)', className='input-label'),
                     html.Div([
-                        dcc.Input(id='smoker_target_temp', type='number', min=0, step=1, value=120, className='input-field'),
+                        dcc.Input(id='smoker_target_temp', type='number', 
+                                 min=config['temperatures']['constraints']['min'], 
+                                 max=config['temperatures']['constraints']['max'], 
+                                 step=1, value=config['temperatures']['smoker_target'], 
+                                 className='input-field'),
                         html.Span('ⓘ', 
                                  title="120/74°C for chicken\n130/63°C for spare ribs",
                                  style={'marginLeft': '5px', 'cursor': 'help', 'color': '#666'})
@@ -68,7 +82,11 @@ app.layout = html.Div([
                 ], className='input-group'),
                 html.Div([
                     html.Label('Meat Minimum (°C)', className='input-label'),
-                    dcc.Input(id='meat_min_temp', type='number', min=0, step=1, value=74, className='input-field')
+                    dcc.Input(id='meat_min_temp', type='number', 
+                             min=config['temperatures']['constraints']['min'], 
+                             max=config['temperatures']['constraints']['max'], 
+                             step=1, value=config['temperatures']['meat_minimum'], 
+                             className='input-field')
                 ], className='input-group')
             ], className='card'),
 
@@ -77,15 +95,27 @@ app.layout = html.Div([
                 html.H3('Forecast Temps', className='section-header section-header-small'),
                 html.Div([
                     html.Label('History Window (min)', className='input-label'),
-                    dcc.Input(id='past_minutes', type='number', min=0, step=1, value=10, className='input-field')
+                    dcc.Input(id='past_minutes', type='number', 
+                             min=config['forecast']['constraints']['past_minutes']['min'], 
+                             max=config['forecast']['constraints']['past_minutes']['max'], 
+                             step=1, value=config['forecast']['past_minutes'], 
+                             className='input-field')
                 ], className='input-group'),
                 html.Div([
                     html.Label('Forecast (min)', className='input-label'),
-                    dcc.Input(id='forecast_minutes', type='number', min=0, step=1, value=10, className='input-field')
+                    dcc.Input(id='forecast_minutes', type='number', 
+                             min=config['forecast']['constraints']['forecast_minutes']['min'], 
+                             max=config['forecast']['constraints']['forecast_minutes']['max'], 
+                             step=1, value=config['forecast']['forecast_minutes'], 
+                             className='input-field')
                 ], className='input-group'),
                 html.Div([
                     html.Label('Smoothing Window (samples)', className='input-label'),
-                    dcc.Input(id='rolling_avg_window', type='number', min=1, max=1000, step=1, value=9, className='input-field')
+                    dcc.Input(id='rolling_avg_window', type='number', 
+                             min=config['forecast']['constraints']['rolling_avg_window']['min'], 
+                             max=config['forecast']['constraints']['rolling_avg_window']['max'], 
+                             step=1, value=config['forecast']['rolling_avg_window'], 
+                             className='input-field')
                 ], className='input-group')
             ], className='card'),
 
@@ -95,7 +125,11 @@ app.layout = html.Div([
                 html.Div([
                     html.Label('Previous Days', className='input-label'),
                     html.Div([
-                        dcc.Input(id='previous_days', type='number', min=0, step=1, value=0, className='input-field'),
+                        dcc.Input(id='previous_days', type='number', 
+                                 min=config['session']['constraints']['previous_days']['min'], 
+                                 max=config['session']['constraints']['previous_days']['max'], 
+                                 step=1, value=config['session']['previous_days'], 
+                                 className='input-field'),
                         html.Span('ⓘ', 
                                  title="0: Latest session\n1: Today's sessions\nX: Sessions from last X days",
                                  style={'marginLeft': '5px', 'cursor': 'help', 'color': '#666'})
@@ -104,7 +138,11 @@ app.layout = html.Div([
                 html.Div([
                     html.Label('UTC Offset (hours)', className='input-label'),
                     html.Div([
-                        dcc.Input(id='utc_offset', type='number', step=1, value=3, className='input-field'),
+                        dcc.Input(id='utc_offset', type='number', 
+                                 min=config['session']['constraints']['utc_offset']['min'], 
+                                 max=config['session']['constraints']['utc_offset']['max'], 
+                                 step=1, value=config['session']['utc_offset'], 
+                                 className='input-field'),
                         html.Span('ⓘ', 
                                  title="+3 for EEST\n+2 for EET",
                                  style={'marginLeft': '5px', 'cursor': 'help', 'color': '#666'})
@@ -121,10 +159,10 @@ app.layout = html.Div([
 
     ], className='main-container'),
 
-    # Hidden timer for auto-refresh every 60 seconds
+    # Hidden timer for auto-refresh
     dcc.Interval(
         id='interval-component',
-        interval=60*1000,  # in milliseconds (60 seconds)
+        interval=config['update']['interval_seconds']*1000,  # Convert seconds to milliseconds
         n_intervals=0
     )
 
@@ -171,9 +209,9 @@ def update_graph(n_clicks, n_intervals, smoker_target_temp, meat_min_temp, past_
             return create_empty_figure("Invalid input parameters"), "--°C", "--°C"
         
         # Ensure minimum values
-        rolling_avg_window = max(1, rolling_avg_window or 1)
-        past_minutes = max(1, past_minutes or 10)
-        forecast_minutes = max(1, forecast_minutes or 10)
+        rolling_avg_window = max(config['forecast']['constraints']['rolling_avg_window']['min'], rolling_avg_window or config['forecast']['rolling_avg_window'])
+        past_minutes = max(config['forecast']['constraints']['past_minutes']['min'], past_minutes or config['forecast']['past_minutes'])
+        forecast_minutes = max(config['forecast']['constraints']['forecast_minutes']['min'], forecast_minutes or config['forecast']['forecast_minutes'])
         
         # Parse temperature data
         df = parse_temperature_data(previous_days=previous_days)
