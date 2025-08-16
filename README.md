@@ -10,7 +10,8 @@ BBQ monitoring dashboard
     If thermocouple diplays erroneous values:
     - https://forums.pimoroni.com/t/mcp9600-breakout-pim437/13129/3
     - https://www.raspberrypi-spy.co.uk/2018/02/change-raspberry-pi-i2c-bus-speed/
-3. Install dependencies: 
+3. Update Hostname: `raspi-config > System ptions > Hostname > "PiBQ"`
+4. Install dependencies: 
     ```
     sudo apt update
     sudo apt install python3.11 python3.11-venv python3.11-dev -y
@@ -20,12 +21,12 @@ BBQ monitoring dashboard
 
     pip install -r requirements.txt
     ```
-4. Set up git repo:
+5. Set up git repo:
     ```
     git clone https://github.com/PAmerikanos/PiBQ.git
     cd PiBQ/
     ```
-5. Set up systemd services for automatic execution:
+6. Set up systemd services for automatic execution:
     ```
     sudo chmod +x install-services.sh
     sudo ./install-services.sh
@@ -38,7 +39,7 @@ BBQ monitoring dashboard
 ## Operation
 1. Turn RPi on and connect it to the Internet. Automatic WiFi connection is set to `Pefki` SSID. The temperature recording and Flask server will initiate upon boot.
 2. Locate RPi IP using the WiFi router's network manager.
-3. On client device open browser at `http://192.168.XXX.XXX:8000` as found above.
+3. On client device open browser at `http://PiBQ.local:8000/` as found above.
 
 ## Features
 - **Real-time Temperature Monitoring**: Live display of smoker and meat temperatures
@@ -50,7 +51,7 @@ BBQ monitoring dashboard
 - **Auto-refresh**: Dashboard updates every 60 seconds automatically
 
 ## Troubleshooting
-From computer within the LAN connect to RPi using SSH: `ssh pi@192.168.XXX.XXX` / `pass: 0000`.
+From computer within the LAN connect to RPi using SSH: `ssh pi@PiBQ.local` / `pass: 0000`.
 
 Check service status & logs:
 ```

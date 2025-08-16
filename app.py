@@ -32,6 +32,11 @@ app.layout = html.Div([
                 )
             ], className='header'),
 
+            # Update Button
+            html.Div([
+                html.Button('Update Graph', id='update-button', className='button')
+            ], className='button-container'),
+
             # Current Temperature Display
             html.Div([
                 html.H3('Current Temps', className='section-header section-header-small'),
@@ -48,11 +53,6 @@ app.layout = html.Div([
                     ], className='temp-display')
                 ])
             ], className='card'),
-
-            # Update Button
-            html.Div([
-                html.Button('Update Dashboard', id='update-button', className='button')
-            ], className='button-container'),
 
             # Temperature Settings
             html.Div([
